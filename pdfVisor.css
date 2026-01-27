@@ -1,0 +1,120 @@
+/* ===== VISOR PDF ===== */
+:root {
+  --blue-main: #1F6FAF;
+  --blue-light: #5BAAD6;
+  --gray-main: #6E6E6E;
+  --gray-light: #F2F4F6;
+  --white: #FFFFFF;
+}
+
+.pdf-viewer {
+  margin: 30px auto;
+  max-width: 1400px;
+  background: var(--white);
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+  padding: 10px;
+}
+
+/* Header */
+.pdf-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.pdf-header h2 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: #4a4a4a;
+}
+
+.pdf-loader input[type="file"] {
+  padding: 16px;
+  background: var(--blue-light);
+  border-radius: 8px;
+  border: 1px solid var(--blue-main);
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.pdf-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: var(--gray-light);
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 15px;
+}
+
+.pdf-toolbar button {
+  background: var(--blue-main);
+  color: var(--white);
+  border: none;
+  padding: 8px 14px;
+  font-size: 1.1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.pdf-toolbar button:hover {
+  background: var(--blue-light);
+  transform: scale(1.05);
+}
+
+.zoom-level,
+.page-indicator {
+  font-size: 1.2rem;
+  color: #050505;
+}
+
+.separator {
+  width: 1px;
+  height: 24px;
+  background: #c9d6df;
+  margin: 0 10px;
+}
+
+/* Contenedor PDF */
+.pdf-container {
+  background: #f8fbfd;
+  border-radius: 12px;
+  padding: 15px;
+  height: 600px;
+  overflow: hidden;
+}
+
+.pdf-scroll {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  text-align: center;
+}
+
+#pdfCanvas {
+  background: white;
+  margin: 0 auto 20px auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border-radius: 6px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .pdf-container {
+    height: 450px;
+  }
+
+  .pdf-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .pdf-toolbar {
+    flex-wrap: wrap;
+  }
+}

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendario</title>
+  <link rel="stylesheet" href="calendario.css">
+  <link rel="stylesheet" href="pdfVisor.css">
+</head>
+<body>
+
+  <header class="institucional-header">
+    <div class="brand">
+      <img src="assets/logoOSI.png" alt="Food Safety Always" class="brand-logo">
+      <div class="brand-text">
+        <h1>Food Safety Always</h1>
+        <p>Look out, Speak up, Act now.</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="app-container">
+    <header class="top-bar">
+      <h1>Calendario</h1>
+      <div class="actions">
+        <button id="prevYear">⏮ Año</button>
+        <button id="prevMonth">◀ Mes</button>
+        <button id="irAHoy">Ir a Hoy</button>
+        <button id="nextMonth">Mes ▶</button>
+        <button id="nextYear">Año ⏭</button>
+      </div>
+      <button id="toggleCalendar">Mostrar/Ocultar</button>
+    </header>
+
+    <div class="month-header">
+      <h2 id="monthYear"></h2>
+      <button id="buscarSemana">Buscar por Nº de semana</button>
+      <input type="file" id="excelInput" accept=".xlsx" />
+      <select class="trabajador-select" id="trabajadorSelect">
+        <option value="">Seleccionar trabajador</option>
+      </select>
+    </div>
+
+    <div class="calendar-container" id="calendarContainer">
+      <table class="calendar" id="calendarTable">
+        <thead>
+          <tr>
+            <th>Semana</th>
+            <th>Lunes</th>
+            <th>Martes</th>
+            <th>Miércoles</th>
+            <th>Jueves</th>
+            <th>Viernes</th>
+            <th>Sábado</th>
+            <th>Domingo</th>
+          </tr>
+        </thead>
+        <tbody id="calendarBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+<div class="pdf-section">
+<section class="pdf-viewer">
+
+  <header class="pdf-header">
+    <h2>Visor de documentos</h2>
+
+    <div class="pdf-loader">
+      <input type="file" id="pdfInput" accept=".pdf">
+    </div>
+  </header>
+
+  <!-- Barra de herramientas -->
+  <div class="pdf-toolbar">
+    <button id="zoomOut">−</button>
+    <span class="zoom-level">100%</span>
+    <button id="zoomIn">+</button>
+
+    <div class="separator"></div>
+
+    <button id="prevPage">◀</button>
+    <span class="page-indicator">Página 1 / 1</span>
+    <button id="nextPage">▶</button>
+  </div>
+
+  <!-- Contenedor del visor -->
+  <div class="pdf-container">
+    <div class="pdf-scroll">
+
+      <!-- Aquí pdf.js insertará los canvas -->
+      <canvas id="pdfCanvas"></canvas>
+
+    </div>
+  </div>
+
+</section>
+
+
+</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="calendario.js"></script>
+    <script src="excel.js"></script>
+    <script src="pdfVisor.js"></script>
+
+</body>
+<footer class="footer-institucional">
+  <div class="footer-grid">
+    
+    <div class="footer-column">
+      <img src="assets/logoOSI.png" alt="Logo Institucional" style="width: 150px; margin-bottom: 15px;">
+      <p style="font-size: 0.85rem; line-height: 1.6; color: #bbb;">
+        Este proyecto esta pensado para ayudar a facilitar la gestión del calendario laboral de esta empresa en concreto.
+    </div>
+
+    <div class="footer-column">
+      <h4>Navegación</h4>
+      <ul class="footer-links">
+        <li><a href="#">Inicio</a></li>
+        <li><a href="#">Ir a OSI FOOD</a></li>
+        <li><a href="#">Ir a ATOSS</a></li>
+        <li><a href="#">Ver en maps</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-column">
+      <h4>Redes</h4>
+      <ul class="social-links">
+        <li><a href="#"><img src="/assets/instagram.png" alt="Instagram">Instagram</a></li>
+        <li><a href="#"><img src="/assets/github.png" alt="GitHub">Git-Hub</a></li>
+        <li><a href="#"><img src="/assets/linkedin.png" alt="LinkedIn">LinkedIn</a></li>
+      </ul>
+    </div>
+
+    <!-- Columna 4: Contacto Directo -->
+    <div class="footer-column">
+      <h4>Contacto</h4>
+      <p>
+        📍Diego Gomez Modolo<br>
+        📞 +34 1234-5678<br>
+        ✉️ diegosMail@gmail.com
+      </p>
+    </div>
+
+  </div>
+
+  <!-- Barra Inferior de Copyright -->
+  <div style="text-align: center; padding-top: 20px; font-size: 0.8rem; color: #777;">
+    <p>&copy; 2026 Todos los derechos reservados para Diego Gomez Modolo.</p>
+  </div>
+</footer>
+
+</html>

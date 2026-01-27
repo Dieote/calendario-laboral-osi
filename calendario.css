@@ -1,0 +1,288 @@
+:root {
+  --blue-main: #1F6FAF;
+  --blue-light: #5BAAD6;
+  --gray-main: #6E6E6E;
+  --gray-light: #F2F4F6;
+  --white: #FFFFFF;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: var(--gray-light);
+  margin: 0;
+  padding: 0;
+}
+
+/* header logo*/
+.institucional-header {
+  background: var(--white);
+  padding: 20px;
+  border-bottom: 4px solid var(--blue-main);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 735px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.brand-logo {
+  height: 100px;
+}
+
+.brand-text h1 {
+  margin: 0;
+  color: var(--blue-main);
+  font-size: 2rem;
+}
+
+.brand-text p {
+  margin: 4px 0 0;
+  color: var(--gray-main);
+  font-weight: 500;
+}
+
+.app-container {
+  text-align: center;
+  padding: 25px;
+}
+
+/* TOPBAR */
+.top-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--blue-main);
+  color: var(--white);
+  padding: 16px 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.top-bar h1 {
+  font-size: 2.5rem;
+  color: var(--white);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-left: 10px;
+}
+
+.actions button, .top-bar button, .month-header button {
+  background: var(--blue-light);
+  color: var(--white);
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 500;
+  transition: background 0.3s, transform 0.1s;
+}
+
+.actions button:hover, .top-bar button:hover, .month-header button:hover {
+  background: var(--blue-main);
+  transform: scale(1.05);
+}
+
+.month-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+  gap: 100px;
+}
+
+.month-header h2 {
+  margin: 0;
+  font-size: 2rem;
+  color: #555;
+}
+.trabajador-select {
+  padding: 10px 14px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  min-width: 220px;
+}
+
+/* CALENDARIO */
+.calendar-container {
+  margin: 20px auto;
+  max-width: 95%;
+  overflow-x: auto;
+}
+
+.calendar {
+  border-collapse: collapse;
+  width: 100%;
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+  font-size: 1.1rem;
+}
+
+.calendar th, .calendar td {
+  border: 1px solid #e0e0e0;
+  padding: 12px 0;
+  text-align: center;
+}
+
+.calendar th {
+  background: var(--blue-light);
+  font-weight: 600;
+  color: var(--white);
+}
+
+.week-number {
+  background: #E8EEF3;
+  font-weight: bold;
+  color: #f40404;
+}
+
+.calendar td {
+  transition: background 0.3s, transform 0.1s;
+}
+
+.calendar td:hover {
+  background: #ebadad;
+  transform: scale(1.05);
+  cursor: pointer;
+}
+
+.today {
+  font-weight: bold;
+  border-radius: 15px;
+}
+
+/*crenderizar colores en calendario*/
+.estado-trabajado {
+  background: #FFF3A0; 
+}
+
+.estado-vacaciones {
+  background: #FFC000; 
+  color: #333;
+}
+
+.estado-libre {
+  background: #66FFCC; 
+}
+
+.estado-festivo {
+  background: #F4B084;
+}
+
+.estado-puente {
+  background: #BFBFBF;
+}
+
+.estado-desconocido {
+  background: #E0E0E0;
+  color: #666;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .brand {
+    flex-direction: column;
+    text-align: center;
+  }
+  .actions {
+    justify-content: center;
+  }
+  .worker-select {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .calendar th, .calendar td {
+    padding: 8px 0;
+    font-size: 0.9rem;
+  }
+  .top-bar h1 { font-size: 2rem; }
+  .month-header h2 { font-size: 1.5rem; }
+  .actions button, .top-bar button, .month-header button {
+    padding: 8px 12px;
+    font-size: 1rem;
+  }
+}
+
+
+
+/*footer*/
+.footer-institucional {
+  background-color: #1a1a1a;
+  color: #ffffff;
+  padding: 40px 10% 20px;
+  font-family: 'Inter', sans-serif;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 30px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 20px;
+}
+
+.footer-column h4 {
+  font-size: 1.1rem;
+  margin-bottom: 1.9rem;
+  color: #f1f1f1;
+}
+
+.footer-column p {
+  font-size: 1rem;
+  line-height: 1.9;
+  color: #bbb;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-links a {
+  color: #bbb;
+  text-decoration: none;
+  font-size: 0.9rem;
+  display: flex;
+  margin-bottom: 10px; 
+}
+
+.footer-links a:hover {
+  color: #fff;
+}
+
+.social-links {
+  list-style: none;
+  padding: 0;
+}
+
+.social-links a {
+  color: #bbb;
+  text-decoration: none;
+  font-size: 0.9rem;
+  display: flex;
+}
+
+.social-links a:hover {
+  color: #fff;
+}
+
+.social-links img {
+  width: 30px;
+  height: 30px;
+  margin: 0 10px 10px 0;
+}
+
