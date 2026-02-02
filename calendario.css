@@ -6,6 +6,10 @@
   --white: #FFFFFF;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 body {
   font-family: 'Segoe UI', sans-serif;
   background: var(--gray-light);
@@ -23,13 +27,15 @@ body {
 .brand {
   display: flex;
   align-items: center;
-  gap: 735px;
+  justify-content: space-between;
+  gap: 20px;
   max-width: 1200px;
   margin: auto;
 }
 
 .brand-logo {
   height: 100px;
+  width: auto;
 }
 
 .brand-text h1 {
@@ -60,18 +66,20 @@ body {
   padding: 16px 24px;
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  gap: 15px;
 }
 
 .top-bar h1 {
   font-size: 2.5rem;
   color: var(--white);
+  margin: 0;
 }
 
 .actions {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-left: 10px;
+  align-items: center;
 }
 
 .actions button, .top-bar button, .month-header button {
@@ -84,11 +92,16 @@ body {
   font-size: 1.1rem;
   font-weight: 500;
   transition: background 0.3s, transform 0.1s;
+  white-space: nowrap;
 }
 
 .actions button:hover, .top-bar button:hover, .month-header button:hover {
   background: var(--blue-main);
   transform: scale(1.05);
+}
+
+.actions button:active, .top-bar button:active, .month-header button:active {
+  transform: scale(0.98);
 }
 
 .month-header {
@@ -97,20 +110,34 @@ body {
   justify-content: center;
   align-items: center;
   margin: 20px 0;
-  gap: 100px;
+  gap: 20px;
 }
 
 .month-header h2 {
   margin: 0;
   font-size: 2rem;
   color: #555;
+  min-width: 200px;
+  text-align: center;
 }
+
 .trabajador-select {
   padding: 10px 14px;
   font-size: 1rem;
   border-radius: 8px;
   border: 1px solid #ccc;
   min-width: 220px;
+  background: white;
+  cursor: pointer;
+}
+
+#excelInput {
+  padding: 8px;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  border: 2px solid var(--blue-light);
+  background: white;
+  cursor: pointer;
 }
 
 /* CALENDARIO */
@@ -132,7 +159,7 @@ body {
 
 .calendar th, .calendar td {
   border: 1px solid #e0e0e0;
-  padding: 12px 0;
+  padding: 12px 8px;
   text-align: center;
 }
 
@@ -140,19 +167,24 @@ body {
   background: var(--blue-light);
   font-weight: 600;
   color: var(--white);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .week-number {
   background: #E8EEF3;
   font-weight: bold;
   color: #f40404;
+  min-width: 60px;
 }
 
 .calendar td {
   transition: background 0.3s, transform 0.1s;
+  min-width: 40px;
 }
 
-.calendar td:hover {
+.calendar td:not(.week-number):hover {
   background: #ebadad;
   transform: scale(1.05);
   cursor: pointer;
@@ -160,25 +192,26 @@ body {
 
 .today {
   font-weight: bold;
-  border-radius: 15px;
+  box-shadow: inset 0 0 0 3px #ff6b6b;
+  position: relative;
 }
 
 /*crenderizar colores en calendario*/
 .estado-trabajado {
-  background: #FFF3A0; 
+  background: #FFF3A0 !important; 
 }
 
 .estado-vacaciones {
-  background: #FFC000; 
+  background: #FFC000 !important; 
   color: #333;
 }
 
 .estado-libre {
-  background: #66FFCC; 
+  background: #66FFCC !important; 
 }
 
 .estado-festivo {
-  background: #F4B084;
+  background: #F4B084 !important;
 }
 
 .estado-puente {
@@ -186,37 +219,164 @@ body {
 }
 
 .estado-desconocido {
-  background: #E0E0E0;
+  background: #E0E0E0 !important;
   color: #666;
 }
 
+/* LEYENDA DE COLORES */
+.leyenda-container {
+  margin: 20px auto;
+  max-width: 800px;
+  padding: 15px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.leyenda-container h3 {
+  margin: 0 0 15px 0;
+  color: var(--gray-main);
+  font-size: 1.2rem;
+}
+
+.leyenda-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.leyenda-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px;
+}
+
+.leyenda-color {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.leyenda-texto {
+  font-size: 0.9rem;
+  color: var(--gray-main);
+}
+
 /* RESPONSIVE */
+@media (max-width: 992px) {
+  .brand {
+    gap: 15px;
+  }
+  .brand-text h1 {
+    font-size: 1.5rem;
+  }
+  .month-header {
+    gap: 15px;
+  }
+  .month-header h2 {
+    font-size: 1.7rem;
+    min-width: auto;
+  }
+}
+
 @media (max-width: 768px) {
   .brand {
     flex-direction: column;
     text-align: center;
   }
+  .brand-logo {
+    height: 80px;
+  }
+  .top-bar {
+    flex-direction: column;
+    text-align: center;
+  }
+  .top-bar h1 {
+    font-size: 2rem;
+  }
   .actions {
     justify-content: center;
   }
-  .worker-select {
+  .month-header {
+    flex-direction: column;
+  }
+  .month-header h2 {
+    font-size: 1.5rem;
+  }
+  .trabajador-select, #excelInput {
     width: 100%;
+    max-width: 300px;
+  }
+  .calendar-container {
+    max-width: 100%;
+  }
+  .leyenda-grid {
+    grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 600px) {
-  .calendar th, .calendar td {
-    padding: 8px 0;
-    font-size: 0.9rem;
+  .app-container {
+    padding: 15px;
   }
-  .top-bar h1 { font-size: 2rem; }
-  .month-header h2 { font-size: 1.5rem; }
+  .institucional-header {
+    padding: 15px;
+  }
+  .brand-logo {
+    height: 60px;
+  }
+  .brand-text h1 {
+    font-size: 1.3rem;
+  }
+  .brand-text p {
+    font-size: 0.85rem;
+  }
+  .top-bar {
+    padding: 12px 16px;
+  }
+  .top-bar h1 {
+    font-size: 1.5rem;
+  }
   .actions button, .top-bar button, .month-header button {
     padding: 8px 12px;
-    font-size: 1rem;
+    font-size: 0.95rem;
+  }
+  .month-header h2 {
+    font-size: 1.3rem;
+  }
+  .calendar {
+    font-size: 0.9rem;
+  }
+  .calendar th, .calendar td {
+    padding: 8px 4px;
+    font-size: 0.85rem;
+  }
+  .week-number {
+    min-width: 45px;
+  }
+  .calendar td {
+    min-width: 35px;
   }
 }
 
+@media (max-width: 400px) {
+  .calendar th, .calendar td {
+    padding: 6px 2px;
+    font-size: 0.75rem;
+  }
+  .calendar td {
+    min-width: 30px;
+  }
+  .actions {
+    gap: 5px;
+  }
+  .actions button, .top-bar button, .month-header button {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+  }
+}
 
 
 /*footer*/
@@ -225,6 +385,7 @@ body {
   color: #ffffff;
   padding: 40px 10% 20px;
   font-family: 'Inter', sans-serif;
+  margin-top: 40px;
 }
 
 .footer-grid {
@@ -250,14 +411,18 @@ body {
 .footer-links {
   list-style: none;
   padding: 0;
+  margin: 0;
+}
+
+.footer-links li {
+  margin-bottom: 10px;
 }
 
 .footer-links a {
   color: #bbb;
   text-decoration: none;
   font-size: 0.9rem;
-  display: flex;
-  margin-bottom: 10px; 
+  display: block;
 }
 
 .footer-links a:hover {
@@ -267,6 +432,7 @@ body {
 .social-links {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
 .social-links a {
@@ -274,6 +440,7 @@ body {
   text-decoration: none;
   font-size: 0.9rem;
   display: flex;
+  align-items: center;
 }
 
 .social-links a:hover {
@@ -283,6 +450,16 @@ body {
 .social-links img {
   width: 30px;
   height: 30px;
-  margin: 0 10px 10px 0;
+  margin-right: 10px;
 }
 
+@media (max-width: 768px) {
+  .footer-institucional {
+    padding: 30px 5% 15px;
+  }
+  
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}

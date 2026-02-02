@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calendario</title>
+  <title>Calendario Laboral</title>
   <link rel="stylesheet" href="calendario.css">
   <link rel="stylesheet" href="pdfVisor.css">
 </head>
@@ -21,7 +21,7 @@
 
   <div class="app-container">
     <header class="top-bar">
-      <h1>Calendario</h1>
+      <h1>Calendario Laboral</h1>
       <div class="actions">
         <button id="prevYear">⏮ Año</button>
         <button id="prevMonth">◀ Mes</button>
@@ -35,10 +35,41 @@
     <div class="month-header">
       <h2 id="monthYear"></h2>
       <button id="buscarSemana">Buscar por Nº de semana</button>
-      <input type="file" id="excelInput" accept=".xlsx" />
+      <input type="file" id="excelInput" accept=".xlsx" title="Cargar archivo Excel"/>
       <select class="trabajador-select" id="trabajadorSelect">
         <option value="">Seleccionar trabajador</option>
       </select>
+    </div>
+
+    <!-- Leyenda de colores -->
+    <div class="leyenda-container">
+      <h3>Leyenda de Estados</h3>
+      <div class="leyenda-grid">
+        <div class="leyenda-item">
+          <div class="leyenda-color estado-trabajado"></div>
+          <span class="leyenda-texto">Trabajado</span>
+        </div>
+        <div class="leyenda-item">
+          <div class="leyenda-color estado-vacaciones"></div>
+          <span class="leyenda-texto">Vacaciones</span>
+        </div>
+        <div class="leyenda-item">
+          <div class="leyenda-color estado-libre"></div>
+          <span class="leyenda-texto">Día libre</span>
+        </div>
+        <div class="leyenda-item">
+          <div class="leyenda-color estado-festivo"></div>
+          <span class="leyenda-texto">Festivo</span>
+        </div>
+        <div class="leyenda-item">
+          <div class="leyenda-color estado-puente"></div>
+          <span class="leyenda-texto">Puente</span>
+        </div>
+        <div class="leyenda-item">
+          <div class="leyenda-color estado-desconocido"></div>
+          <span class="leyenda-texto">Sin datos</span>
+        </div>
+      </div>
     </div>
 
     <div class="calendar-container" id="calendarContainer">

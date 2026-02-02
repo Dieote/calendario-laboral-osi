@@ -1,7 +1,8 @@
 const input = document.getElementById('excelInput');
 
 let trabajadorActual = null;
-
+let worksheetGlobal = null;
+let trabajadores = []; // Variable global para trabajadores
 
 input.addEventListener('change', manejarArchivo);
 
@@ -32,6 +33,8 @@ function procesarWorkbook(workbook) {
     }
     console.log('Procesando hoja:', worksheet.name);
     
+    worksheetGlobal = worksheet; // Guardar worksheet globalmente
+    
     const totalFilas = worksheet.rowCount;
     const totalColumnas = worksheet.columnCount;
     
@@ -44,22 +47,22 @@ function detectarTrabajadores(worksheet) {
   const COLUMNA_INICIO = 3;   // C
   const COLUMNA_FIN = 61;     // BI
 
-  const trabajadores = [];
+  const trabajadoresDetectados = [];
 
   for (let col = COLUMNA_INICIO; col <= COLUMNA_FIN; col++) {
     const cell = worksheet.getRow(FILA_NOMBRES).getCell(col);
     const valor = cell.value;
 
     if (typeof valor === 'string' && valor.trim() !== '') {
-      trabajadores.push({
+      trabajadoresDetectados.push({
         nombre: valor.trim(),
         columna: col
       });
     }
   }
 
-  console.log('Trabajadores detectados:', trabajadores);
-  return trabajadores;
+  console.log('Trabajadores detectados:', trabajadoresDetectados);
+  return trabajadoresDetectados;
 }
 
 function detectarSemanas(worksheet, diasPorFila) {
@@ -75,7 +78,12 @@ function detectarSemanas(worksheet, diasPorFila) {
     const valor = cell.value;
 
     if (typeof valor === 'string' && valor.toLowerCase().includes('semana')) {
-      const numero = parseInt(valor.replace(/\D/g, ''), 10); // remover todo menos dígitos
+      let numero = parseInt(valor.replace(/\D/g, ''), 10); // remover todo menos dígitos
+
+      // CORRECCIÓN: Convertir semana 53 a semana 1
+      if (numero === 53) {
+        numero = 1;
+      }
 
       if(numero === ultimaSemanaDetectada) continue; //con esto evitamos que se repitan las semanas
 
@@ -226,17 +234,17 @@ function obtenerRangoTrabajador(worksheet, trabajador, filaInicio, filaFin, dias
 }
 
 function procesarTrabajador(worksheet, nombreBuscado) {
-  const trabajadores = detectarTrabajadores(worksheet);
+  const trabajadoresTemp = detectarTrabajadores(worksheet);
   const dias = detectarDias(worksheet);
   const semanas = detectarSemanas(worksheet, dias);
 
-  const trabajador = trabajadores.find(t =>
+  const trabajador = trabajadoresTemp.find(t =>
     t.nombre.toLowerCase() === nombreBuscado.toLowerCase()
   );
 
   if (!trabajador) {
     console.warn('No se encontró el trabajador:', nombreBuscado);
-    return;
+    return null;
   }
 
   const calendario = [];
@@ -265,7 +273,11 @@ function procesarTrabajador(worksheet, nombreBuscado) {
 document.getElementById('trabajadorSelect')
   .addEventListener('change', e => {
     const nombre = e.target.value;
-    if (!nombre) return;
+    if (!nombre) {
+      trabajadorActual = null;
+      calendar.generateCalendar();
+      return;
+    }
 
     trabajadorActual = nombre;
 
@@ -275,11 +287,12 @@ document.getElementById('trabajadorSelect')
 
     if (!trabajador) return;
     
+    // Regenerar calendario con datos del trabajador
     calendar.generateCalendar();
   });
 
 function cargarSelectTrabajadores(worksheet) {
-  const trabajadores = detectarTrabajadores(worksheet);
+  trabajadores = detectarTrabajadores(worksheet);
   const select = document.getElementById('trabajadorSelect');
   // Limpiar opciones existentes
   select.innerHTML = '<option value="">Seleccionar trabajador</option>';
@@ -290,4 +303,29 @@ function cargarSelectTrabajadores(worksheet) {
     option.textContent = trabajador.nombre;
     select.appendChild(option);
   });
+}
+
+// Función auxiliar para obtener el estado de un día específico
+function obtenerEstadoDia(fecha) {
+  if (!trabajadorActual || !worksheetGlobal) return null;
+
+  const calendarioTrabajador = procesarTrabajador(worksheetGlobal, trabajadorActual);
+  if (!calendarioTrabajador) return null;
+
+  // Obtener número de semana de la fecha
+  const numSemana = calendar.getSemanaNumero(fecha);
+  
+  // Buscar la semana en el calendario
+  const semanaData = calendarioTrabajador.find(s => s.semana === numSemana);
+  if (!semanaData) return null;
+
+  // Obtener día de la semana (0=Domingo, 1=Lunes, etc.)
+  const diaSemana = fecha.getDay();
+  const diasMap = { 0: 'D', 1: 'L', 2: 'M', 3: 'X', 4: 'J', 5: 'V', 6: 'S' };
+  const letraDia = diasMap[diaSemana];
+
+  // Buscar el día en el rango
+  const diaData = semanaData.rango.find(d => d.dia === letraDia);
+  
+  return diaData ? diaData.estado : null;
 }
