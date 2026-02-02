@@ -329,3 +329,17 @@ function obtenerEstadoDia(fecha) {
   
   return diaData ? diaData.estado : null;
 }
+// Cargar Excel auto
+// máticamente
+window.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const response = await fetch('assets/calendario2026.xlsx');
+    const blob = await response.blob();
+    const file = new File([blob], 'calendario2026.xlsx', { 
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+    });
+    await leerExcel(file);
+  } catch (error) {
+    console.log('Carga manual del Excel');
+  }
+});
