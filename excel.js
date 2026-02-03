@@ -329,8 +329,7 @@ function obtenerEstadoDia(fecha) {
   
   return diaData ? diaData.estado : null;
 }
-// Cargar Excel auto
-// máticamente
+// Cargar Excel automáticamente
 window.addEventListener('DOMContentLoaded', async () => {
   try {
     const response = await fetch('assets/calendario2026.xlsx');
