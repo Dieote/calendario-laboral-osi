@@ -67,41 +67,13 @@ body {
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   gap: 15px;
+  margin-bottom: 20px;
 }
 
 .top-bar h1 {
   font-size: 2.5rem;
   color: var(--white);
   margin: 0;
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-}
-
-.actions button, .top-bar button, .month-header button {
-  background: var(--blue-light);
-  color: var(--white);
-  border: none;
-  padding: 10px 18px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1.1rem;
-  font-weight: 500;
-  transition: background 0.3s, transform 0.1s;
-  white-space: nowrap;
-}
-
-.actions button:hover, .top-bar button:hover, .month-header button:hover {
-  background: var(--blue-main);
-  transform: scale(1.05);
-}
-
-.actions button:active, .top-bar button:active, .month-header button:active {
-  transform: scale(0.98);
 }
 
 .month-header {
@@ -131,13 +103,51 @@ body {
   cursor: pointer;
 }
 
-#excelInput {
-  padding: 8px;
-  font-size: 0.95rem;
-  border-radius: 8px;
-  border: 2px solid var(--blue-light);
+/* CONTROLES CALENDARIO */
+.calendar-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
   background: white;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.actions button, .top-bar button, .month-header button, .calendar-controls button {
+  background: var(--blue-light);
+  color: var(--white);
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
   cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 500;
+  transition: background 0.3s, transform 0.1s;
+  white-space: nowrap;
+}
+
+.actions button:hover, .top-bar button:hover, .month-header button:hover, .calendar-controls button:hover {
+  background: var(--blue-main);
+  transform: scale(1.05);
+}
+
+.actions button:active, .top-bar button:active, .month-header button:active, .calendar-controls button:active {
+  transform: scale(0.98);
+}
+
+#excelInput {
+  display: none;
 }
 
 /* CALENDARIO */
@@ -196,7 +206,31 @@ body {
   position: relative;
 }
 
-/*crenderizar colores en calendario*/
+/* VISTA ANUAL */
+.month-title-row {
+  background: var(--blue-main) !important;
+}
+
+.month-title {
+  background: var(--blue-main);
+  color: white;
+  font-weight: bold;
+  font-size: 1.3rem;
+  padding: 15px !important;
+  text-align: center;
+}
+
+.month-spacer {
+  height: 20px;
+  background: transparent;
+}
+
+.month-spacer td {
+  border: none;
+  background: transparent;
+}
+
+/* ESTADOS */
 .estado-trabajado {
   background: #FFF3A0 !important; 
 }
@@ -215,7 +249,7 @@ body {
 }
 
 .estado-puente {
-  background: #BFBFBF;
+  background: #BFBFBF !important;
 }
 
 .estado-desconocido {
@@ -223,25 +257,74 @@ body {
   color: #666;
 }
 
-/* LEYENDA DE COLORES */
-.leyenda-container {
+/* PANELS */
+.panels-container {
+  display: flex;
+  gap: 20px;
   margin: 20px auto;
-  max-width: 800px;
-  padding: 15px;
+  max-width: 95%;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.leyenda-container,
+.estadisticas-container {
+  flex: 1;
+  min-width: 300px;
+  max-width: 600px;
   background: white;
   border-radius: 12px;
+  padding: 15px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-.leyenda-container h3 {
-  margin: 0 0 15px 0;
+.leyenda-header,
+.estadisticas-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--gray-light);
+}
+
+.leyenda-header h3,
+.estadisticas-header h3 {
+  margin: 0;
   color: var(--gray-main);
   font-size: 1.2rem;
 }
 
+.estadisticas-header h3 {
+  color: var(--blue-main);
+}
+
+.btn-toggle-leyenda,
+.btn-toggle {
+  background: var(--blue-light);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background 0.3s;
+}
+
+.btn-toggle-leyenda:hover,
+.btn-toggle:hover {
+  background: var(--blue-main);
+}
+
+.leyenda-content,
+.estadisticas-content {
+  transition: all 0.3s ease;
+}
+
 .leyenda-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 10px;
 }
 
@@ -257,11 +340,100 @@ body {
   height: 30px;
   border-radius: 6px;
   border: 1px solid #ddd;
+  flex-shrink: 0;
 }
 
 .leyenda-texto {
   font-size: 0.9rem;
   color: var(--gray-main);
+}
+
+.estadisticas-info {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--gray-main);
+  font-size: 1.1rem;
+}
+
+.estadisticas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.estadistica-tarjeta {
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.estadistica-tarjeta:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+}
+
+.estadistica-icono {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+}
+
+.estadistica-info-card {
+  flex: 1;
+}
+
+.estadistica-label {
+  font-size: 0.85rem;
+  color: var(--gray-main);
+  margin-bottom: 5px;
+}
+
+.estadistica-valor {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--blue-main);
+}
+
+.estadistica-resumen {
+  background: linear-gradient(135deg, var(--blue-main) 0%, var(--blue-light) 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  margin-top: 20px;
+}
+
+.estadistica-resumen h4 {
+  margin: 0 0 15px 0;
+  font-size: 1.2rem;
+}
+
+.resumen-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+.resumen-item {
+  background: rgba(255,255,255,0.1);
+  padding: 12px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.resumen-label {
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.resumen-valor {
+  font-size: 1.5rem;
+  font-weight: bold;
 }
 
 /* RESPONSIVE */
@@ -271,9 +443,6 @@ body {
   }
   .brand-text h1 {
     font-size: 1.5rem;
-  }
-  .month-header {
-    gap: 15px;
   }
   .month-header h2 {
     font-size: 1.7rem;
@@ -305,15 +474,28 @@ body {
   .month-header h2 {
     font-size: 1.5rem;
   }
-  .trabajador-select, #excelInput {
+  .trabajador-select {
     width: 100%;
     max-width: 300px;
   }
   .calendar-container {
     max-width: 100%;
   }
+  .panels-container {
+    flex-direction: column;
+  }
+  .leyenda-container,
+  .estadisticas-container {
+    max-width: 100%;
+  }
   .leyenda-grid {
     grid-template-columns: 1fr;
+  }
+  .estadisticas-grid {
+    grid-template-columns: 1fr;
+  }
+  .resumen-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -376,10 +558,16 @@ body {
     padding: 6px 10px;
     font-size: 0.85rem;
   }
+  .estadistica-tarjeta {
+    flex-direction: column;
+    text-align: center;
+  }
+  .resumen-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
-
-/*footer*/
+/* FOOTER */
 .footer-institucional {
   background-color: #1a1a1a;
   color: #ffffff;
@@ -457,7 +645,6 @@ body {
   .footer-institucional {
     padding: 30px 5% 15px;
   }
-  
   .footer-grid {
     grid-template-columns: 1fr;
     gap: 20px;

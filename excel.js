@@ -3,6 +3,7 @@ const input = document.getElementById('excelInput');
 let trabajadorActual = null;
 let worksheetGlobal = null;
 let trabajadores = []; // Variable global para trabajadores
+let añoExcel = null;
 
 input.addEventListener('change', manejarArchivo);
 
@@ -16,12 +17,9 @@ async function manejarArchivo(event) {
 
 async function leerExcel(file) {
   const workbook = new ExcelJS.Workbook();
-
   const arrayBuffer = await file.arrayBuffer();
   await workbook.xlsx.load(arrayBuffer);
-
   console.log('Workbook cargado correctamente');
-
   procesarWorkbook(workbook);
 }
 
@@ -34,12 +32,20 @@ function procesarWorkbook(workbook) {
     console.log('Procesando hoja:', worksheet.name);
     
     worksheetGlobal = worksheet; // Guardar worksheet globalmente
-    
+    añoExcel = detectarAñoExcel(worksheet);
+    console.log('Año del calendario:', añoExcel);
+
     const totalFilas = worksheet.rowCount;
     const totalColumnas = worksheet.columnCount;
     
     console.log(`Total de filas: ${totalFilas} Total de columnas: ${totalColumnas}`);
     cargarSelectTrabajadores(worksheet);
+}
+
+function detectarAñoExcel(worksheet) {
+  const añoActual = new Date().getFullYear();
+  console.log('Usando año actual como referencia:', añoActual);
+  return añoActual;
 }
 
 function detectarTrabajadores(worksheet) {
@@ -70,7 +76,6 @@ function detectarSemanas(worksheet, diasPorFila) {
   const FILA_INICIO = 9;
   
   const semanas = [];
-
   let ultimaSemanaDetectada = null; //con esto evitamos que se repitan las semanas
 
   for (let row = FILA_INICIO; row <= worksheet.rowCount; row++) {
@@ -80,10 +85,6 @@ function detectarSemanas(worksheet, diasPorFila) {
     if (typeof valor === 'string' && valor.toLowerCase().includes('semana')) {
       let numero = parseInt(valor.replace(/\D/g, ''), 10); // remover todo menos dígitos
 
-      // CORRECCIÓN: Convertir semana 53 a semana 1
-      if (numero === 53) {
-        numero = 1;
-      }
 
       if(numero === ultimaSemanaDetectada) continue; //con esto evitamos que se repitan las semanas
 
@@ -103,7 +104,7 @@ function detectarSemanas(worksheet, diasPorFila) {
         filaFin: filaLunes + 6 
       });
 
-      ultimaSemanaDetectada = numero; //con esto evitamos que se repitan las semanas
+      ultimaSemanaDetectada = numero;
     }
   }
   return semanas;
@@ -146,7 +147,6 @@ function leerCelda(worksheet, fila, col) {
     };
   }
     return { valor, colorInfo };
-
 }
 
 function hexCambiaRgb(argb) {
@@ -159,61 +159,54 @@ function hexCambiaRgb(argb) {
 }
 
 function clasificarEstado(valor, colorInfo) {
-
-  if (valor === 1 || valor === "1") return "TRABAJADO";
-  if (valor === 0 || valor === "0") return "VACACIONES";
-
-  // Si no hay valor, analizamos color
-  if (!colorInfo) return "DESCONOCIDO";
-
-  const { argb, theme, tint } = colorInfo;
-  
-  //colores
-  if (theme === 0 && tint !== null && tint < 0) {
-    return "PUENTE"; // gris
-  }
-
-   if (theme === 5 && tint !== null && tint > 0) {
-    return "FESTIVO"; // rojo claro - rosado
-  }
-
-  if (argb) {
-    const rgb = hexCambiaRgb(argb);
-
-    const margenColor = 20; // Margen para comparar colores
-    const colores = {
-      amarillo: { r: 255, g: 255, b: 153 },
-      //rosado: { r: 248, g: 203, b: 173 },
-      //rojoClaro: { r: 244, g: 176, b: 132 },
-      rojoFuerte: { r: 255, g: 0, b: 0 },
-      celeste: { r: 102, g: 255, b: 204 },
-      //gris: { r: 191, g: 191, b: 191 },
-      verdeFuerte: { r: 0, g: 176, b: 80 },
-      naranja: { r: 255, g: 192, b: 0 }
-    }; 
+  if (colorInfo) {
+    const { argb, theme, tint } = colorInfo;
     
-    function colorMatch(c1, c2) {
-      return Math.abs(c1.r - c2.r) <= margenColor &&
-            Math.abs(c1.g - c2.g) <= margenColor &&
-            Math.abs(c1.b - c2.b) <= margenColor;
+    if (theme === 5 && tint !== null && tint > 0) {
+      return "FESTIVO";
     }
     
+    if (theme === 0 && tint !== null && tint < 0) {
+      return "PUENTE";
+    }
+
+    if (argb) {
+      const rgb = hexCambiaRgb(argb);
+      const margenColor = 20;
+      
+      const colores = {
+        amarillo: { r: 255, g: 255, b: 153 },
+        rojoFuerte: { r: 255, g: 0, b: 0 },
+        celeste: { r: 102, g: 255, b: 204 },
+        verdeFuerte: { r: 0, g: 176, b: 80 },
+        naranja: { r: 255, g: 192, b: 0 },
+        rosado: { r: 244, g: 176, b: 132 }
+      };
+      
+      function colorMatch(c1, c2) {
+        return Math.abs(c1.r - c2.r) <= margenColor &&
+              Math.abs(c1.g - c2.g) <= margenColor &&
+              Math.abs(c1.b - c2.b) <= margenColor;
+      }
+      
+      if (colorMatch(rgb, colores.rosado)) return "FESTIVO";
       if (colorMatch(rgb, colores.amarillo)) return "TRABAJADO";
-      //if (colorMatch(colorInfo, colores.rosado)) return "FESTIVO";
-      //if (colorMatch(colorInfo, colores.rojoClaro)) return "FESTIVO";
       if (colorMatch(rgb, colores.celeste)) return "LIBRE";
-      //if (colorMatch(colorInfo, colores.gris)) return "PUENTE";
       if (colorMatch(rgb, colores.rojoFuerte)) return "VACACIONES";
       if (colorMatch(rgb, colores.verdeFuerte)) return "VACACIONES";
       if (colorMatch(rgb, colores.naranja)) return "VACACIONES";
-      return "DESCONOCIDO";
-    }    
-    return "DESCONOCIDO";
+    }
+  }
+  
+  if (valor === 1 || valor === "1") return "TRABAJADO";
+  if (valor === 0 || valor === "0") return "VACACIONES";
+  
+  return "DESCONOCIDO";
 }
 
 function obtenerEstadoCelda(worksheet, fila, col) {
     const { valor, colorInfo } = leerCelda(worksheet, fila, col);
-    const estado =  clasificarEstado(valor, colorInfo);  
+    const estado = clasificarEstado(valor, colorInfo);  
     return estado;
 }
 
@@ -269,7 +262,6 @@ function procesarTrabajador(worksheet, nombreBuscado) {
 }
 
 /*Manejo de eventos*/
-
 document.getElementById('trabajadorSelect')
   .addEventListener('change', e => {
     const nombre = e.target.value;
@@ -309,6 +301,10 @@ function cargarSelectTrabajadores(worksheet) {
 function obtenerEstadoDia(fecha) {
   if (!trabajadorActual || !worksheetGlobal) return null;
 
+  if (añoExcel && fecha.getFullYear() !== añoExcel) {
+    return "DESCONOCIDO";
+  }
+
   const calendarioTrabajador = procesarTrabajador(worksheetGlobal, trabajadorActual);
   if (!calendarioTrabajador) return null;
 
@@ -317,19 +313,17 @@ function obtenerEstadoDia(fecha) {
   
   // Buscar la semana en el calendario
   const semanaData = calendarioTrabajador.find(s => s.semana === numSemana);
-  if (!semanaData) return null;
+  if (!semanaData) return "DESCONOCIDO";
 
-  // Obtener día de la semana (0=Domingo, 1=Lunes, etc.)
   const diaSemana = fecha.getDay();
   const diasMap = { 0: 'D', 1: 'L', 2: 'M', 3: 'X', 4: 'J', 5: 'V', 6: 'S' };
   const letraDia = diasMap[diaSemana];
 
-  // Buscar el día en el rango
   const diaData = semanaData.rango.find(d => d.dia === letraDia);
   
-  return diaData ? diaData.estado : null;
+  return diaData ? diaData.estado : "DESCONOCIDO";
 }
-// Cargar Excel automáticamente
+
 window.addEventListener('DOMContentLoaded', async () => {
   try {
     const response = await fetch('assets/calendario2026.xlsx');
@@ -338,7 +332,8 @@ window.addEventListener('DOMContentLoaded', async () => {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
     });
     await leerExcel(file);
+    console.log('✅ Excel cargado automáticamente');
   } catch (error) {
-    console.log('Carga manual del Excel');
+    console.log('⚠️ Carga manual del Excel necesaria');
   }
 });

@@ -22,55 +22,25 @@
   <div class="app-container">
     <header class="top-bar">
       <h1>Calendario Laboral</h1>
-      <div class="actions">
-        <button id="prevYear">⏮ Año</button>
-        <button id="prevMonth">◀ Mes</button>
-        <button id="irAHoy">Ir a Hoy</button>
-        <button id="nextMonth">Mes ▶</button>
-        <button id="nextYear">Año ⏭</button>
-      </div>
-      <button id="toggleCalendar">Mostrar/Ocultar</button>
-    </header>
-
-    <div class="month-header">
-      <h2 id="monthYear"></h2>
-      <button id="buscarSemana">Buscar por Nº de semana</button>
-      <input type="file" id="excelInput" accept=".xlsx" title="Cargar archivo Excel"/>
       <select class="trabajador-select" id="trabajadorSelect">
         <option value="">Seleccionar trabajador</option>
       </select>
-    </div>
+    </header>
 
-    <!-- Leyenda de colores -->
-    <div class="leyenda-container">
-      <h3>Leyenda de Estados</h3>
-      <div class="leyenda-grid">
-        <div class="leyenda-item">
-          <div class="leyenda-color estado-trabajado"></div>
-          <span class="leyenda-texto">Trabajado</span>
-        </div>
-        <div class="leyenda-item">
-          <div class="leyenda-color estado-vacaciones"></div>
-          <span class="leyenda-texto">Vacaciones</span>
-        </div>
-        <div class="leyenda-item">
-          <div class="leyenda-color estado-libre"></div>
-          <span class="leyenda-texto">Día libre</span>
-        </div>
-        <div class="leyenda-item">
-          <div class="leyenda-color estado-festivo"></div>
-          <span class="leyenda-texto">Festivo</span>
-        </div>
-        <div class="leyenda-item">
-          <div class="leyenda-color estado-puente"></div>
-          <span class="leyenda-texto">Puente</span>
-        </div>
-        <div class="leyenda-item">
-          <div class="leyenda-color estado-desconocido"></div>
-          <span class="leyenda-texto">Sin datos</span>
-        </div>
+
+
+      <div class="calendar-controls">
+        <button id="prevYear">⏮ Año</button>
+        <button id="prevMonth">◀ Mes</button>
+        <h2 id="monthYear"></h2>
+        <button id="nextMonth">Mes ▶</button>
+        <button id="nextYear">Año ⏭</button>
+        <button id="irAHoy">Ir a Hoy</button>
+        <button id="toggleVista">Vista Anual</button>
+        <button id="buscarSemana">Buscar Semana</button>
       </div>
-    </div>
+
+      <input type="file" id="excelInput" accept=".xlsx" title="Cargar archivo Excel"/> <!--display none -->
 
     <div class="calendar-container" id="calendarContainer">
       <table class="calendar" id="calendarTable">
@@ -90,51 +60,104 @@
       </table>
     </div>
   </div>
+  
+  <!-- Leyenda de colores + Estadísticas  -->
+<div class="panels-container">
+      <div class="leyenda-container" id="leyendaContainer">
+        <div class="leyenda-header">
+          <h3>🎨 Leyenda de Estados</h3>
+          <button id="toggleLeyenda" class="btn-toggle-leyenda">Mostrar</button>
+        </div>
+        <div class="leyenda-content" id="leyendaContent" style="display: none;">
+          <div class="leyenda-grid">
+            <div class="leyenda-item">
+              <div class="leyenda-color estado-trabajado"></div>
+              <span class="leyenda-texto">Trabajado</span>
+            </div>
+            <div class="leyenda-item">
+              <div class="leyenda-color estado-vacaciones"></div>
+              <span class="leyenda-texto">Vacaciones</span>
+            </div>
+            <div class="leyenda-item">
+              <div class="leyenda-color estado-libre"></div>
+              <span class="leyenda-texto">Día libre</span>
+            </div>
+            <div class="leyenda-item">
+              <div class="leyenda-color estado-festivo"></div>
+              <span class="leyenda-texto">Festivo</span>
+            </div>
+            <div class="leyenda-item">
+              <div class="leyenda-color estado-puente"></div>
+              <span class="leyenda-texto">Puente</span>
+            </div>
+            <div class="leyenda-item">
+              <div class="leyenda-color estado-desconocido"></div>
+              <span class="leyenda-texto">Sin datos</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
 <div class="pdf-section">
-<section class="pdf-viewer">
+  <section class="pdf-viewer">
 
-  <header class="pdf-header">
-    <h2>Visor de documentos</h2>
+    <header class="pdf-header">
+      <h2>Visor de documentos</h2>
+    </header>
 
-    <div class="pdf-loader">
-      <input type="file" id="pdfInput" accept=".pdf">
+    <!-- Barra de herramientas -->
+    <div class="pdf-toolbar">
+      <button id="zoomOut">−</button>
+      <span class="zoom-level">100%</span>
+      <button id="zoomIn">+</button>
+
+      <div class="separator"></div>
+
+      <button id="prevPage">◀</button>
+      <span class="page-indicator">Página 1 / 1</span>
+      <button id="nextPage">▶</button>
     </div>
-  </header>
 
-  <!-- Barra de herramientas -->
-  <div class="pdf-toolbar">
-    <button id="zoomOut">−</button>
-    <span class="zoom-level">100%</span>
-    <button id="zoomIn">+</button>
-
-    <div class="separator"></div>
-
-    <button id="prevPage">◀</button>
-    <span class="page-indicator">Página 1 / 1</span>
-    <button id="nextPage">▶</button>
-  </div>
-
-  <!-- Contenedor del visor -->
-  <div class="pdf-container">
-    <div class="pdf-scroll">
-
-      <!-- Aquí pdf.js insertará los canvas -->
-      <canvas id="pdfCanvas"></canvas>
-
+    <!-- Contenedor del visor -->
+    <div class="pdf-container">
+      <div class="pdf-scroll">
+        <!-- Aquí pdf.js insertará los canvas -->
+        <div id="pdfViewerContainer">
+          <canvas id="pdfCanvas"></canvas>
+        </div>
+      </div>
     </div>
-  </div>
-
-</section>
-
-
+  </section>
 </div>
 
     <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="calendario.js"></script>
     <script src="excel.js"></script>
+    <script src="estadisticas.js"></script>
     <script src="pdfVisor.js"></script>
+
+<!-- Cargar PDF automáticamente -->
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        if (typeof pdfVisor !== 'undefined') {
+          fetch('assets/CuadranteVacuno2026.pdf')
+            .then(response => response.blob())
+            .then(blob => {
+              const file = new File([blob], 'CuadranteVacuno2026.pdf', { type: 'application/pdf' });
+              pdfVisor.leerArchivo(file);
+              console.log('✅ PDF cargado automáticamente');
+            })
+            .catch(error => {
+              console.log('⚠️ No se pudo cargar el PDF automáticamente');
+            });
+        }
+      }, 500);
+    });
+  </script>
 
 </body>
 <footer class="footer-institucional">
