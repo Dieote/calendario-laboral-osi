@@ -7,6 +7,10 @@ const pdfVisor = {
   ctx: null, // contexto
 
   init(){
+    // Configurar PDF.js worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
     this.canvas = document.getElementById('pdfCanvas');
     this.ctx = this.canvas.getContext('2d');
 
@@ -17,8 +21,10 @@ const pdfVisor = {
 
   //eventos en interfaz
   unirEventosInterfaz() {
-    document.getElementById('pdfInput')
-    .addEventListener('change', (e) => this.cargarArchivo(e));
+    const pdfInput = document.getElementById('pdfInput');
+    if(pdfInput) {
+      pdfInput.addEventListener('change', (e) => this.cargarArchivo(e));
+    }
 
     document.getElementById('zoomIn')
       .addEventListener('click', () => this.zoomIn());
