@@ -1,9 +1,10 @@
 const calendar = {
   currentYear: new Date().getFullYear(),
   currentMonth: new Date().getMonth(),
-  monthNames: ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
-  showCalendar: true,
-  vistaAnual: false, // false = mensual, true = anual
+  monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ],
+  vistaAnual: false,
 
   init() {
     document.getElementById('prevYear').addEventListener('click', () => this.prevYear());
@@ -19,18 +20,46 @@ const calendar = {
       toggleLeyenda.addEventListener('click', () => this.toggleLeyenda());
     }
 
+    const toggleEstadisticas = document.getElementById('toggleEstadisticas');
+    if (toggleEstadisticas) {
+      toggleEstadisticas.addEventListener('click', () => this.toggleEstadisticas());
+    }
+
     this.generateCalendar();
   },
 
   toggleLeyenda() {
     const content = document.getElementById('leyendaContent');
     const btn = document.getElementById('toggleLeyenda');
-    
-    if (content && btn) {
-      const isVisible = content.style.display !== 'none';
-      content.style.display = isVisible ? 'none' : 'block';
-      btn.textContent = isVisible ? 'Mostrar' : 'Ocultar';
+    if (!content || !btn) return;
+    const abriendo = content.style.display === 'none';
+
+    if (abriendo) {
+      const estContent = document.getElementById('estadisticasContent');
+      const estBtn     = document.getElementById('toggleEstadisticas');
+      if (estContent) estContent.style.display = 'none';
+      if (estBtn)     estBtn.textContent = 'Mostrar';
     }
+
+    content.style.display = abriendo ? 'block' : 'none';
+    btn.textContent        = abriendo ? 'Ocultar' : 'Mostrar';
+  },
+
+  toggleEstadisticas() {
+    const content = document.getElementById('estadisticasContent');
+    const btn     = document.getElementById('toggleEstadisticas');
+    if (!content || !btn) return;
+    const abriendo = content.style.display === 'none';
+
+    if (abriendo) {
+      const leyContent = document.getElementById('leyendaContent');
+      const leyBtn     = document.getElementById('toggleLeyenda');
+      if (leyContent) leyContent.style.display = 'none';
+      if (leyBtn)     leyBtn.textContent = 'Mostrar';
+    }
+
+    content.style.display = abriendo ? 'block' : 'none';
+    btn.textContent        = abriendo ? 'Ocultar' : 'Mostrar';
   },
 
   toggleVista() {
@@ -38,17 +67,11 @@ const calendar = {
     const btn = document.getElementById('toggleVista');
     btn.textContent = this.vistaAnual ? 'Vista Mensual' : 'Vista Anual';
     
-    // Ocultar/mostrar botones de navegación mensual
     const prevMonth = document.getElementById('prevMonth');
     const nextMonth = document.getElementById('nextMonth');
-    if (this.vistaAnual) {
-      prevMonth.style.display = 'none';
-      nextMonth.style.display = 'none';
-    } else {
-      prevMonth.style.display = 'inline-block';
-      nextMonth.style.display = 'inline-block';
-    }
-    
+    prevMonth.style.display = this.vistaAnual ? 'none' : 'inline-block';
+    nextMonth.style.display = this.vistaAnual ? 'none' : 'inline-block';
+
     this.generateCalendar();
   },
 
@@ -87,16 +110,13 @@ const calendar = {
           if (this.esHoy(date.getDate(), this.currentMonth, this.currentYear)) {
             cell.classList.add('today');
           }
-          // Aplicar estado del trabajador si está seleccionado
           if (typeof obtenerEstadoDia === 'function') {
             const fechaActual = new Date(this.currentYear, this.currentMonth, date.getDate());
             const estado = obtenerEstadoDia(fechaActual);
             
             if (estado) {
-              // Eliminar clases de estado anteriores
               cell.className = cell.className.replace(/estado-\w+/g, '').trim();
               
-              // Agregar clase según el estado
               switch(estado) {
                 case 'TRABAJADO':
                   cell.classList.add('estado-trabajado');
@@ -118,7 +138,6 @@ const calendar = {
                   break;
               }
               
-              // Mantener la clase 'today' si es necesario
               if (this.esHoy(date.getDate(), this.currentMonth, this.currentYear)) {
                 cell.classList.add('today');
               }
@@ -138,9 +157,7 @@ const calendar = {
     calendarBody.innerHTML = '';
     document.getElementById('monthYear').textContent = `Año ${this.currentYear}`;
 
-    // Crear tabla anual con 12 meses
     for (let mes = 0; mes < 12; mes++) {
-      // Fila de título del mes
       let titleRow = document.createElement('tr');
       titleRow.classList.add('month-title-row');
       let titleCell = document.createElement('td');
@@ -150,7 +167,6 @@ const calendar = {
       titleRow.appendChild(titleCell);
       calendarBody.appendChild(titleRow);
 
-      // Generar días del mes
       const firstDay = new Date(this.currentYear, mes, 1);
       const lastDay = new Date(this.currentYear, mes + 1, 0);
       let date = new Date(firstDay);
@@ -215,7 +231,6 @@ const calendar = {
         calendarBody.appendChild(row);
       }
 
-      // Espacio entre meses
       if (mes < 11) {
         let spacerRow = document.createElement('tr');
         spacerRow.classList.add('month-spacer');
@@ -234,8 +249,6 @@ const calendar = {
     tempDate.setDate(tempDate.getDate() + 4 - (tempDate.getDay() || 7));
     const yearStart = new Date(tempDate.getFullYear(), 0, 1);
     const semanaNum = Math.ceil((((tempDate - yearStart) / 86400000) + 1) / 7);
-    
-    // Usar semana 53 tal cual la calcula ISO-8601
     return semanaNum;
   },
 
@@ -264,8 +277,8 @@ const calendar = {
   esHoy(day, month, year) {
     const today = new Date();
     return day === today.getDate() &&
-           month === today.getMonth() &&
-           year === today.getFullYear();
+      month === today.getMonth() &&
+      year === today.getFullYear();
   },
 
   buscarSemana() {
@@ -278,7 +291,6 @@ const calendar = {
     let date = new Date(this.currentYear, 0, 1);
     let encontrado = false;
 
-  // Buscar hasta encontrar la semana o llegar al final del año
     while (date.getFullYear() === this.currentYear && !encontrado) {
       if (this.getSemanaNumero(date) === weekNumber) {
         encontrado = true;

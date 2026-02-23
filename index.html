@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
   <link rel="stylesheet" href="css/calendario.css">
   <link rel="stylesheet" href="css/pdfVisor.css">
 </head>
+
 <body>
 
   <header class="institucional-header">
@@ -27,20 +29,27 @@
       </select>
     </header>
 
-
-
-      <div class="calendar-controls">
-        <button id="prevYear">⏮ Año</button>
-        <button id="prevMonth">◀ Mes</button>
-        <h2 id="monthYear"></h2>
-        <button id="nextMonth">Mes ▶</button>
-        <button id="nextYear">Año ⏭</button>
-        <button id="irAHoy">Ir a Hoy</button>
-        <button id="toggleVista">Vista Anual</button>
-        <button id="buscarSemana">Buscar Semana</button>
+    <div class="calendar-controls">
+      <div class="nav-group">
+        <button id="prevYear" title="Año anterior">&#9664;&#9664; <span class="btn-label">Año</span></button>
+        <button id="prevMonth" title="Mes anterior">&#9664; <span class="btn-label">Mes</span></button>
       </div>
 
-      <input type="file" id="excelInput" accept=".xlsx" title="Cargar archivo Excel"/> <!--display none -->
+      <h2 id="monthYear"></h2>
+
+      <div class="nav-group">
+        <button id="nextMonth" title="Mes siguiente"><span class="btn-label">Mes</span> &#9654;</button>
+        <button id="nextYear" title="Año siguiente"><span class="btn-label">Año</span> &#9654;&#9654;</button>
+      </div>
+
+      <div class="nav-group nav-actions">
+        <button id="irAHoy" title="Ir a hoy">&#8962; Hoy</button>
+        <button id="toggleVista" title="Cambiar vista">&#9783; Vista Anual</button>
+        <button id="buscarSemana" title="Buscar semana">&#9906; Semana</button>
+      </div>
+    </div>
+
+    <input type="file" id="excelInput" accept=".xlsx" title="Cargar archivo Excel" /> <!--display none -->
 
     <div class="calendar-container" id="calendarContainer">
       <table class="calendar" id="calendarTable">
@@ -60,86 +69,99 @@
       </table>
     </div>
   </div>
-  
-  <!-- Leyenda de colores + Estadísticas  -->
-<div class="panels-container">
-      <div class="leyenda-container" id="leyendaContainer">
-        <div class="leyenda-header">
-          <h3>🎨 Leyenda de Estados</h3>
-          <button id="toggleLeyenda" class="btn-toggle-leyenda">Mostrar</button>
-        </div>
-        <div class="leyenda-content" id="leyendaContent" style="display: none;">
-          <div class="leyenda-grid">
-            <div class="leyenda-item">
-              <div class="leyenda-color estado-trabajado"></div>
-              <span class="leyenda-texto">Trabajado</span>
-            </div>
-            <div class="leyenda-item">
-              <div class="leyenda-color estado-vacaciones"></div>
-              <span class="leyenda-texto">Vacaciones</span>
-            </div>
-            <div class="leyenda-item">
-              <div class="leyenda-color estado-libre"></div>
-              <span class="leyenda-texto">Día libre</span>
-            </div>
-            <div class="leyenda-item">
-              <div class="leyenda-color estado-festivo"></div>
-              <span class="leyenda-texto">Festivo</span>
-            </div>
-            <div class="leyenda-item">
-              <div class="leyenda-color estado-puente"></div>
-              <span class="leyenda-texto">Puente</span>
-            </div>
-            <div class="leyenda-item">
-              <div class="leyenda-color estado-desconocido"></div>
-              <span class="leyenda-texto">Sin datos</span>
-            </div>
+
+  <div class="panels-container">
+    <div class="leyenda-container" id="leyendaContainer">
+      <div class="leyenda-header">
+        <h3>🎨 Leyenda de Estados</h3>
+        <button id="toggleLeyenda" class="btn-toggle-leyenda">Mostrar</button>
+      </div>
+      <div class="leyenda-content" id="leyendaContent" style="display: none;">
+        <div class="leyenda-grid">
+          <div class="leyenda-item">
+            <div class="leyenda-color estado-trabajado"></div>
+            <span class="leyenda-texto">Trabajado</span>
+          </div>
+          <div class="leyenda-item">
+            <div class="leyenda-color estado-vacaciones"></div>
+            <span class="leyenda-texto">Vacaciones</span>
+          </div>
+          <div class="leyenda-item">
+            <div class="leyenda-color estado-libre"></div>
+            <span class="leyenda-texto">Día libre</span>
+          </div>
+          <div class="leyenda-item">
+            <div class="leyenda-color estado-festivo"></div>
+            <span class="leyenda-texto">Festivo</span>
+          </div>
+          <div class="leyenda-item">
+            <div class="leyenda-color estado-puente"></div>
+            <span class="leyenda-texto">Puente</span>
+          </div>
+          <div class="leyenda-item">
+            <div class="leyenda-color estado-desconocido"></div>
+            <span class="leyenda-texto">Sin datos</span>
           </div>
         </div>
       </div>
     </div>
   </div>
+  </div>
 
-<div class="pdf-section">
-  <section class="pdf-viewer">
+  <div class="panels-container">
 
-    <header class="pdf-header">
-      <h2>Visor de documentos</h2>
-    </header>
+    <div class="estadisticas-container" id="estadisticasContainer">
+      <div class="estadisticas-header">
+        <h3>📊 Estadísticas</h3>
+        <button id="toggleEstadisticas" class="btn-toggle">Mostrar</button>
+      </div>
 
-    <!-- Barra de herramientas -->
-    <div class="pdf-toolbar">
-      <button id="zoomOut">−</button>
-      <span class="zoom-level">100%</span>
-      <button id="zoomIn">+</button>
-
-      <div class="separator"></div>
-
-      <button id="prevPage">◀</button>
-      <span class="page-indicator">Página 1 / 1</span>
-      <button id="nextPage">▶</button>
-    </div>
-
-    <!-- Contenedor del visor -->
-    <div class="pdf-container">
-      <div class="pdf-scroll">
-        <!-- Aquí pdf.js insertará los canvas -->
-        <div id="pdfViewerContainer">
-          <canvas id="pdfCanvas"></canvas>
+      <div class="estadisticas-content" id="estadisticasContent" style="display:none;">
+        <div class="estadisticas-info">
+          Selecciona un trabajador para ver sus estadísticas
         </div>
       </div>
     </div>
-  </section>
-</div>
+  </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script src="js/calendario.js"></script>
-    <script src="js/excel.js"></script>
-    <script src="js/estadisticas.js"></script>
-    <script src="js/pdfVisor.js"></script>
+  </div>
 
-<!-- Cargar PDF automáticamente -->
+  <div class="pdf-section">
+    <section class="pdf-viewer">
+
+      <header class="pdf-header">
+        <h2>Visor de documentos</h2>
+      </header>
+
+      <div class="pdf-toolbar">
+        <button id="zoomOut">−</button>
+        <span class="zoom-level">100%</span>
+        <button id="zoomIn">+</button>
+
+        <div class="separator"></div>
+
+        <button id="prevPage">◀</button>
+        <span class="page-indicator">Página 1 / 1</span>
+        <button id="nextPage">▶</button>
+      </div>
+
+      <div class="pdf-container">
+        <div class="pdf-scroll">
+          <div id="pdfViewerContainer">
+            <canvas id="pdfCanvas"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="js/calendario.js"></script>
+  <script src="js/excel.js"></script>
+  <script src="js/estadisticas.js"></script>
+  <script src="js/pdfVisor.js"></script>
+
   <script>
     window.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
@@ -162,11 +184,15 @@
 </body>
 <footer class="footer-institucional">
   <div class="footer-grid">
-    
+
     <div class="footer-column">
       <img src="assets/logoOSI.png" alt="Logo Institucional" style="width: 150px; margin-bottom: 15px;">
       <p style="font-size: 0.85rem; line-height: 1.6; color: #bbb;">
-        Este proyecto esta pensado para ayudar a facilitar la gestión del calendario laboral de esta empresa en concreto.
+        Este proyecto esta pensado para ayudar a facilitar la gestión del calendario laboral de trabajadores. Con el
+        objetivo de mejorar
+        la organización y planificación de los turnos, vacaciones y días libres, proporcionando una herramienta visual e
+        interactiva. PRoyecto personal
+        sin animo de lucro, es un proyecto personal para aprender y compartir conocimientos sobre desarrollo web.
     </div>
 
     <div class="footer-column">
@@ -188,7 +214,6 @@
       </ul>
     </div>
 
-    <!-- Columna 4: Contacto Directo -->
     <div class="footer-column">
       <h4>Contacto</h4>
       <p>
@@ -200,7 +225,6 @@
 
   </div>
 
-  <!-- Barra Inferior de Copyright -->
   <div style="text-align: center; padding-top: 20px; font-size: 0.8rem; color: #777;">
     <p>&copy; 2026 Todos los derechos reservados para Diego Gomez Modolo.</p>
   </div>

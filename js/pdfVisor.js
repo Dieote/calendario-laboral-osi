@@ -7,7 +7,7 @@ const pdfVisor = {
   ctx: null, // contexto
 
   init(){
-    // Configurar PDF.js worker
+ // Configurar PDF.js worker
     pdfjsLib.GlobalWorkerOptions.workerSrc = 
       'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
