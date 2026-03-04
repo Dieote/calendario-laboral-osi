@@ -197,9 +197,9 @@ function construirMapaEstados(worksheet, trabajador) {
 
   for (let row = filaAncla; row <= FILA_FIN; row++) {
     const letraDia = diasPorFila[row];
-    if (!letraDia) continue;  
+    if (!letraDia) continue;
 
-    const diaSemanaJS = fechaActual.getDay(); 
+    const diaSemanaJS = fechaActual.getDay();
     const letrasJS = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
     const letraEsperada = letrasJS[diaSemanaJS];
 
@@ -238,6 +238,8 @@ function lunesDeSemanISO(año, semana) {
 
 function cargarSelectTrabajadores(worksheet) {
   trabajadores = detectarTrabajadores(worksheet);
+  trabajadores.sort((a, b) => a.nombre > b.nombre ? 1 : -1);
+
   const select = document.getElementById('trabajadorSelect');
   select.innerHTML = '<option value="">Seleccionar trabajador</option>';
 
