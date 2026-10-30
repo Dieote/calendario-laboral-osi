@@ -1,6 +1,20 @@
+function obtenerAñoSemana(fecha) {
+  const lunes = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate());
+  lunes.setDate(lunes.getDate() - ((lunes.getDay() + 6) % 7));
+
+  const domingo = new Date(lunes);
+  domingo.setDate(lunes.getDate() + 6);
+
+  const primeroEneroSiguiente = new Date(lunes.getFullYear() + 1, 0, 1);
+  return primeroEneroSiguiente >= lunes && primeroEneroSiguiente <= domingo
+    ? primeroEneroSiguiente.getFullYear()
+    : lunes.getFullYear();
+}
+
 const calendar = {
   currentYear: new Date().getFullYear(),
   currentMonth: new Date().getMonth(),
+  onYearChange: null,
   monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
   ],
@@ -244,34 +258,62 @@ const calendar = {
   },
 
   getSemanaNumero(date) {
-    const tempDate = new Date(date.getTime());
-    tempDate.setHours(0,0,0,0);
-    tempDate.setDate(tempDate.getDate() + 4 - (tempDate.getDay() || 7));
-    const yearStart = new Date(tempDate.getFullYear(), 0, 1);
-    const semanaNum = Math.ceil((((tempDate - yearStart) / 86400000) + 1) / 7);
-    return semanaNum;
+    const lunes = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    lunes.setDate(lunes.getDate() - ((lunes.getDay() + 6) % 7));
+
+    const añoSemana = obtenerAñoSemana(date);
+    const primerDia = new Date(añoSemana, 0, 1);
+    const lunesSemana1 = new Date(primerDia);
+    lunesSemana1.setDate(primerDia.getDate() - ((primerDia.getDay() + 6) % 7));
+
+    // Los números siguen el calendario laboral, no la numeración ISO.
+    const diasDesdeSemana1 = (
+      Date.UTC(lunes.getFullYear(), lunes.getMonth(), lunes.getDate()) -
+      Date.UTC(lunesSemana1.getFullYear(), lunesSemana1.getMonth(), lunesSemana1.getDate())
+    ) / 86400000;
+    return Math.floor(diasDesdeSemana1 / 7) + 1;
   },
 
   prevMonth() {
+    const añoAnterior = this.currentYear;
     if (this.currentMonth === 0) { this.currentMonth = 11; this.currentYear--; } 
     else { this.currentMonth--; }
     this.generateCalendar();
+    if (this.currentYear !== añoAnterior && this.onYearChange) {
+      this.onYearChange(this.currentYear);
+    }
   },
 
   nextMonth() {
+    const añoAnterior = this.currentYear;
     if (this.currentMonth === 11) { this.currentMonth = 0; this.currentYear++; } 
     else { this.currentMonth++; }
     this.generateCalendar();
+    if (this.currentYear !== añoAnterior && this.onYearChange) {
+      this.onYearChange(this.currentYear);
+    }
   },
 
-  prevYear() { this.currentYear--; this.generateCalendar(); },
-  nextYear() { this.currentYear++; this.generateCalendar(); },
+  prevYear() {
+    this.currentYear--;
+    this.generateCalendar();
+    if (this.onYearChange) this.onYearChange(this.currentYear);
+  },
+  nextYear() {
+    this.currentYear++;
+    this.generateCalendar();
+    if (this.onYearChange) this.onYearChange(this.currentYear);
+  },
 
   irAHoy() {
+    const añoAnterior = this.currentYear;
     const today = new Date();
     this.currentYear = today.getFullYear();
     this.currentMonth = today.getMonth();
     this.generateCalendar();
+    if (this.currentYear !== añoAnterior && this.onYearChange) {
+      this.onYearChange(this.currentYear);
+    }
   },
 
   esHoy(day, month, year) {
@@ -282,9 +324,9 @@ const calendar = {
   },
 
   buscarSemana() {
-    const weekNumber = parseInt(prompt('Ingrese el Nº de semana (1-53):'), 10);
-    if (!weekNumber || weekNumber < 1 || weekNumber > 53) {
-      alert('Por favor ingrese un número de semana válido (1-53)');
+    const weekNumber = parseInt(prompt('Ingrese el Nº de semana (1-52):'), 10);
+    if (!weekNumber || weekNumber < 1 || weekNumber > 52) {
+      alert('Por favor ingrese un número de semana válido (1-52)');
       return;
     }
 

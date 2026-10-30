@@ -69,6 +69,17 @@ body {
   cursor: pointer;
 }
 
+.excel-status {
+  flex-basis: 100%;
+  margin: 0;
+  text-align: right;
+  font-size: 0.9rem;
+}
+
+.excel-status.error {
+  color: #ffe0e0;
+}
+
 /* CONTROLES CALENDARIO */
 .calendar-controls {
   display: flex;

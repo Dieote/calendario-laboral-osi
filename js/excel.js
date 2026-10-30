@@ -4,6 +4,7 @@ let trabajadorActual = null;
 let worksheetGlobal = null;
 let trabajadores = [];
 let añoExcel = null;
+let solicitudCarga = 0;
 
 let mapaEstados = {};
 
@@ -16,40 +17,64 @@ function fechaKey(fecha) {
 
 input.addEventListener('change', manejarArchivo);
 
+function mostrarEstadoCarga(mensaje, esError = false) {
+  const estado = document.getElementById('excelStatus');
+  if (!estado) return;
+
+  estado.textContent = mensaje;
+  estado.classList.toggle('error', esError);
+}
+
 async function manejarArchivo(event) {
   const file = event.target.files[0];
   if (!file) return;
-  console.log('Archivo cargado:', file.name);
-  await leerExcel(file);
+
+  try {
+    await leerExcel(file);
+    mostrarEstadoCarga(`Calendario ${añoExcel} cargado correctamente.`);
+  } catch (error) {
+    console.error('No se pudo cargar el archivo Excel:', error);
+    mostrarEstadoCarga(`No se pudo cargar el calendario: ${error.message}`, true);
+  }
 }
 
-async function leerExcel(file) {
+async function leerExcel(file, añoEsperado, nombreTrabajador = trabajadorActual, solicitudActual) {
   const workbook = new ExcelJS.Workbook();
   const arrayBuffer = await file.arrayBuffer();
   await workbook.xlsx.load(arrayBuffer);
-  console.log('Workbook cargado correctamente');
-  procesarWorkbook(workbook);
+  if (solicitudActual && solicitudActual !== solicitudCarga) return;
+  procesarWorkbook(workbook, añoEsperado, nombreTrabajador);
 }
 
-function procesarWorkbook(workbook) {
+function procesarWorkbook(workbook, añoEsperado, nombreTrabajador) {
   const worksheet = workbook.worksheets[0];
   if (!worksheet) {
-    console.warn('No se encontró ninguna hoja en el archivo Excel.');
-    return;
+    throw new Error('El archivo no contiene ninguna hoja de cálculo.');
   }
-  console.log('Procesando hoja:', worksheet.name);
+
+  const añoDetectado = detectarAñoExcel(worksheet);
+  if (!añoDetectado) {
+    throw new Error('La celda A1 debe contener el año del calendario.');
+  }
+  if (añoEsperado && añoDetectado !== añoEsperado) {
+    throw new Error(`El archivo contiene el año ${añoDetectado}, pero se esperaba ${añoEsperado}.`);
+  }
 
   worksheetGlobal = worksheet;
-  añoExcel = detectarAñoExcel(worksheet);
-  console.log('Año del calendario:', añoExcel);
-
-  cargarSelectTrabajadores(worksheet);
+  añoExcel = añoDetectado;
+  calendar.currentYear = añoDetectado;
+  cargarSelectTrabajadores(worksheet, nombreTrabajador);
 }
 
 function detectarAñoExcel(worksheet) {
-  const añoActual = new Date().getFullYear();
-  console.log('Año de referencia:', añoActual);
-  return añoActual;
+  const valor = worksheet.getCell('A1').value;
+  const año = typeof valor === 'number'
+    ? valor
+    : typeof valor === 'string' && /^\d{4}$/.test(valor.trim())
+      ? Number(valor.trim())
+      : null;
+
+  return Number.isInteger(año) && año >= 1900 && año <= 9999 ? año : null;
 }
 
 function detectarTrabajadores(worksheet) {
@@ -73,12 +98,14 @@ function detectarTrabajadores(worksheet) {
 function detectarDias(worksheet) {
   const COLUMNA_DIA = 2;  // B
   const FILA_INICIO = 9;
+  const diasValidos = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
   const diasPorFila = {};
 
   for (let row = FILA_INICIO; row <= worksheet.rowCount; row++) {
     const valor = worksheet.getRow(row).getCell(COLUMNA_DIA).value;
-    if (typeof valor === 'string' && valor.trim() !== '') {
-      diasPorFila[row] = valor.trim().toUpperCase();
+    if (typeof valor === 'string') {
+      const dia = valor.trim().toUpperCase();
+      if (diasValidos.includes(dia)) diasPorFila[row] = dia;
     }
   }
   return diasPorFila;
@@ -157,47 +184,31 @@ function construirMapaEstados(worksheet, trabajador) {
   const FILA_INICIO = 9;
   const FILA_FIN = worksheet.rowCount;
 
-  let filaAncla = null;
+  const filasDias = Object.keys(diasPorFila).map(Number).sort((a, b) => a - b);
+  const primeraFilaDia = filasDias[0];
+  let filaSemana1 = null;
+
   for (let row = FILA_INICIO; row <= FILA_FIN; row++) {
-    if (diasPorFila[row] === 'L') {
-      filaAncla = row;
-      break;
-    }
-  }
-
-  if (filaAncla === null) {
-    console.warn('No se encontró fila ancla (primer lunes).');
-    return {};
-  }
-
-  let numeroSemanaAncla = null;
-  for (let row = filaAncla; row >= FILA_INICIO; row--) {
     const valor = worksheet.getRow(row).getCell(1).value;
-    if (typeof valor === 'string' && valor.toLowerCase().includes('semana')) {
-      numeroSemanaAncla = parseInt(valor.replace(/\D/g, ''), 10);
+    if (typeof valor === 'string' && /semana\s*1\b/i.test(valor)) {
+      filaSemana1 = row;
       break;
     }
   }
 
-  if (numeroSemanaAncla === null) {
-    console.warn('No se encontró número de semana ancla.');
-    return {};
+  if (!primeraFilaDia || !filaSemana1 || diasPorFila[filaSemana1] !== 'L') {
+    throw new Error('No se encontró la primera fila de la semana 1 en el calendario.');
   }
 
-  const añoAncla = numeroSemanaAncla > 50 ? añoExcel - 1 : añoExcel;
-  const fechaAncla = lunesDeSemanISO(añoAncla, numeroSemanaAncla);
-
-  console.log(
-    `Ancla: fila ${filaAncla} = Semana ${numeroSemanaAncla} → ${fechaKey(fechaAncla)}`
-  );
-
+  // La semana 1 contiene el 1 de enero; las filas previas son semanas de contexto.
+  const diasAntesSemana1 = filasDias.filter(row => row < filaSemana1).length;
   const mapa = {};
-  let fechaActual = new Date(fechaAncla);
-  const ordenDias = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+  const fechaSemana1 = lunesDeSemana(añoExcel, 1);
+  let fechaActual = new Date(fechaSemana1);
+  fechaActual.setDate(fechaSemana1.getDate() - diasAntesSemana1);
 
-  for (let row = filaAncla; row <= FILA_FIN; row++) {
+  for (const row of filasDias) {
     const letraDia = diasPorFila[row];
-    if (!letraDia) continue;
 
     const diaSemanaJS = fechaActual.getDay();
     const letrasJS = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
@@ -215,28 +226,27 @@ function construirMapaEstados(worksheet, trabajador) {
 
     const { valor, colorInfo } = leerCelda(worksheet, row, col);
     const estado = clasificarEstado(valor, colorInfo);
+    // Se conservan las semanas vecinas para completar el calendario en sus límites.
     mapa[fechaKey(fechaActual)] = estado;
 
     fechaActual = new Date(fechaActual);
     fechaActual.setDate(fechaActual.getDate() + 1);
   }
 
-  console.log(`Mapa construido para ${trabajador.nombre}: ${Object.keys(mapa).length} días`);
   return mapa;
 }
 
-function lunesDeSemanISO(año, semana) {
-  const cuatroEnero = new Date(año, 0, 4);
-  const diaSemana = cuatroEnero.getDay() || 7; // 1=Lun…7=Dom
-  const lunesSemana1 = new Date(cuatroEnero);
-  lunesSemana1.setDate(cuatroEnero.getDate() - (diaSemana - 1));
+function lunesDeSemana(año, semana) {
+  const primerDia = new Date(año, 0, 1);
+  const lunesSemana1 = new Date(primerDia);
+  lunesSemana1.setDate(primerDia.getDate() - ((primerDia.getDay() + 6) % 7));
 
   const resultado = new Date(lunesSemana1);
   resultado.setDate(lunesSemana1.getDate() + (semana - 1) * 7);
   return resultado;
 }
 
-function cargarSelectTrabajadores(worksheet) {
+function cargarSelectTrabajadores(worksheet, nombreSeleccionado = null) {
   trabajadores = detectarTrabajadores(worksheet);
   trabajadores.sort((a, b) => a.nombre > b.nombre ? 1 : -1);
 
@@ -249,36 +259,47 @@ function cargarSelectTrabajadores(worksheet) {
     option.textContent = t.nombre;
     select.appendChild(option);
   });
+
+  const trabajador = trabajadores.find(
+    t => t.nombre.toLowerCase() === (nombreSeleccionado || '').toLowerCase()
+  );
+  select.value = trabajador ? trabajador.nombre : '';
+  actualizarTrabajador(select.value);
 }
 
 document.getElementById('trabajadorSelect')
   .addEventListener('change', e => {
-    const nombre = e.target.value;
+    actualizarTrabajador(e.target.value);
+  });
 
-    if (!nombre) {
-      trabajadorActual = null;
-      mapaEstados = {};
-      calendar.generateCalendar();
-      if (typeof estadisticas !== 'undefined') {
-        estadisticas.limpiar();
-      }
-      return;
-    }
+function actualizarTrabajador(nombre) {
+  trabajadorActual = nombre || null;
 
-    trabajadorActual = nombre;
+  if (!nombre) {
+    mapaEstados = {};
+    calendar.generateCalendar();
+    if (typeof estadisticas !== 'undefined') estadisticas.limpiar();
+    return;
+  }
 
-    const trabajador = trabajadores.find(
-      t => t.nombre.toLowerCase() === nombre.toLowerCase()
-    );
+  const trabajador = trabajadores.find(
+    t => t.nombre.toLowerCase() === nombre.toLowerCase()
+  );
 
-    if (!trabajador || !worksheetGlobal) return;
+  if (!trabajador || !worksheetGlobal) return;
+
+  try {
     mapaEstados = construirMapaEstados(worksheetGlobal, trabajador);
     calendar.generateCalendar();
 
     if (typeof estadisticas !== 'undefined') {
       estadisticas.actualizar(nombre);
     }
-  });
+  } catch (error) {
+    console.error('No se pudo construir el calendario:', error);
+    mostrarEstadoCarga(`No se pudo mostrar el calendario: ${error.message}`, true);
+  }
+}
 
 function obtenerMapaActual() {
   return mapaEstados;
@@ -297,16 +318,47 @@ function obtenerEstadoDia(fecha) {
   return estado || null;
 }
 
-window.addEventListener('DOMContentLoaded', async () => {
+async function cargarCalendarioAño(año) {
+  const solicitudActual = ++solicitudCarga;
+  const nombreArchivo = `calendario${año}.xlsx`;
+  const trabajadorAnterior = trabajadorActual;
+
+  worksheetGlobal = null;
+  añoExcel = null;
+  trabajadorActual = null;
+  mapaEstados = {};
+  calendar.generateCalendar();
+  if (typeof estadisticas !== 'undefined') estadisticas.limpiar();
+  document.getElementById('trabajadorSelect').innerHTML =
+    '<option value="">Seleccionar trabajador</option>';
+
   try {
-    const response = await fetch('assets/calendario2026.xlsx');
+    mostrarEstadoCarga(`Cargando calendario ${año}...`);
+    const response = await fetch(`assets/${nombreArchivo}`);
+    if (solicitudActual !== solicitudCarga) return;
+    if (!response.ok) {
+      throw new Error(`No se pudo acceder a ${nombreArchivo} (HTTP ${response.status}).`);
+    }
+
     const blob = await response.blob();
-    const file = new File([blob], 'calendario2026.xlsx', {
+    const file = new File([blob], nombreArchivo, {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     });
-    await leerExcel(file);
-    console.log('✅ Excel cargado automáticamente');
+    await leerExcel(file, año, trabajadorAnterior, solicitudActual);
+    if (solicitudActual !== solicitudCarga) return;
+    if (trabajadorAnterior && !trabajadorActual) {
+      mostrarEstadoCarga(`Calendario ${añoExcel} cargado. Selecciona un trabajador.`);
+      return;
+    }
+    mostrarEstadoCarga(`Calendario ${añoExcel} cargado correctamente.`);
   } catch (error) {
-    console.log('⚠️ Carga manual del Excel necesaria:', error.message);
+    if (solicitudActual !== solicitudCarga) return;
+    console.error('No se pudo cargar el calendario automáticamente:', error);
+    mostrarEstadoCarga(`No se pudo cargar el calendario: ${error.message}`, true);
   }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  calendar.onYearChange = cargarCalendarioAño;
+  cargarCalendarioAño(calendar.currentYear);
 });

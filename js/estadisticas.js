@@ -47,7 +47,7 @@ const estadisticas = {
 
     for (const [key, estado] of Object.entries(mapa)) {
       const fecha = new Date(key + 'T00:00:00'); // evitar desfase UTC
-      if (fecha.getFullYear() !== año) continue;  // solo el año principal
+      if (fecha.getFullYear() !== año) continue;  // solo cuenta días del año del calendario
       const mes      = fecha.getMonth();      // 0-11
       const diaSem   = fecha.getDay();        // 0=Dom, 6=Sáb
       const esSab    = diaSem === 6;
