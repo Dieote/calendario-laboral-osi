@@ -1,71 +1,173 @@
-🧠 Modelo
+CALENDARIO LABORAL OSI
+Guia de componentes, datos y pruebas
 
-1️⃣ Personas (columnas)
-Cada columna es un trabajador
-El nombre está en la cabecera (rotado)
-Esa columna representa todo el año de esa persona
 
-2️⃣ Tiempo (filas)
-Agrupado por:
-    Semana
-    Día (L, M, X, J, V, S, D)
-    Las semanas están numeradas
-    El calendario es semanal, no mensual
+1. DESCRIPCION
 
-3️⃣ Estado(celda)
-Una celda puede indicar el estado de ese trabajador ese día mediante:
+Aplicacion web estatica para consultar el calendario laboral por trabajador.
+Lee los cuadrantes Excel desde la carpeta assets, muestra los estados en una
+vista mensual o anual y calcula estadisticas. Tambien muestra un PDF en un
+visor integrado.
 
-    1 → día trabajado
-    0 → ausencia solicitada / vacaciones
-    vacío → no trabaja
+La aplicacion no tiene actualmente backend, base de datos ni inicio de sesion.
+El navegador solicita los Excel y el PDF como archivos estaticos del sitio.
 
-Colores (significado)
 
-Amarillo → trabajado (RGB del excel 255 255 153 #FFFF99 )
-Rojo claro → festivo (RGB del excel 244 176 132 #F4B084)
-Celeste → semana libre / fin de semana (RGB del excel 102 255 204 #66FFCC)
-Gris → puente (RGB del excel 191 191 191 #BFBFBF )
-rojoFuerte → VACACIONES (RGB del excel 255 0 0 #FF0000)
-verdeFuerte → VACACIONES (RGB del excel 0 176 80 #00B050)
-naranja → VACACIONES {RGB del excel 255 192 0 #FFC000}
+2. ESTRUCTURA DEL PROYECTO
 
-🎯 Objetivo funcional
+index.html
+  Estructura de la pagina, controles del calendario, selector de trabajador,
+  paneles de leyenda y estadisticas, visor PDF y carga automatica del PDF.
 
-Desde calendario HTML:
-    Cargar Excel / PDF / Mostrar calendario
-Detectar automáticamente:
-    nombres
-    semanas
-    días
-    estados
-Permite:
-    seleccionar un trabajador
-    visualizar su calendario
-    mostrar estadísticas:
-    días trabajados
-    festivos
-    vacaciones
-    semanas libres
+js/calendario.js
+  Navegacion mensual/anual, calculo y dibujo de la tabla, numeracion de semana,
+  boton Hoy y busqueda de semana. Cuando cambia el año solicita cargar el
+  cuadrante de ese año.
 
-🧩 estados
+js/excel.js
+  Carga el Excel correspondiente al año, lee el año desde A1, detecta
+  trabajadores y dias, clasifica los estados de las celdas y crea el mapa de
+  fechas consultado por el calendario. Tambien presenta el estado o error de
+  carga.
 
-Estados posibles
-    TRABAJADO
-    VACACIONES
-    FESTIVO
-    PUENTE
-    LIBRE
+js/estadisticas.js
+  Calcula y dibuja estadisticas anuales y el desglose mensual. Solo cuenta las
+  fechas cuyo año natural coincide con el año del cuadrante.
 
-reglas:
-    1 + amarillo → TRABAJADO
-    0 + verde → VACACIONES
-    0 + rojoFuerte/ verdeFuerte / naranja → VACACIONES
-    vacío + rojoClaro → FESTIVO
-    vacío + celeste → LIBRE / fin de semana
+js/pdfVisor.js
+  Carga y dibuja el PDF; implementa zoom y navegacion entre paginas.
 
-📊 Estadísticas 
+css/calendario.css
+  Estilos generales, calendario, paneles, estados y diseño adaptable.
 
-Contar Estado === TRABAJADO
-Contar Estado === FESTIVO
-Agrupar por Semana
-Detectar semanas completas libres
+css/pdfVisor.css
+  Estilos del visor PDF y sus controles.
+
+assets/
+  Excels, PDFs e imagenes usadas por la interfaz.
+
+
+3. FLUJO DE DATOS
+
+1. La pagina determina el año inicial usando la fecha actual y solicita
+   assets/calendarioAAAA.xlsx.
+2. ExcelJS abre la primera hoja. La celda A1 debe contener el año como numero
+   o como texto de cuatro digitos.
+3. El selector se llena con los nombres de la fila 1, columnas C a BI.
+4. Al elegir un trabajador, se lee la columna correspondiente y se clasifican
+   sus celdas por valor y color.
+5. El mapa relaciona cada fecha (AAAA-MM-DD) con un estado. El calendario
+   consulta el mapa para pintar los dias visibles.
+6. Al cambiar de año, se solicita el archivo de ese año. Se conserva el
+   trabajador si aparece en el nuevo cuadrante.
+
+El PDF se carga por separado desde la ruta indicada en index.html.
+
+
+4. FORMATO ESPERADO DEL EXCEL
+
+- Archivo: assets/calendarioAAAA.xlsx. Ejemplos: calendario2025.xlsx y
+  calendario2026.xlsx.
+- A1: año al que pertenece el cuadrante.
+- Primera hoja: hoja procesada por la aplicacion.
+- Fila 1, columnas C a BI: nombres de trabajadores.
+- Columna A, desde la fila 9: rótulos de semana, por ejemplo "Semana 1".
+- Columna B, desde la fila 9: dia de cada fila, con L, M, X, J, V, S o D.
+- Cada dia ocupa una fila; se espera que la secuencia siga de lunes a domingo.
+- Los datos del trabajador estan en su columna, en las mismas filas que los
+  dias.
+
+La plantilla puede incluir semanas anteriores o posteriores al año de A1.
+Esas semanas de contexto se conservan en el mapa para poder mostrar los dias
+que ocupan las primeras o ultimas filas del calendario; no se deben eliminar
+sin revisar antes el comportamiento de los limites del año.
+
+Conviene mantener A1, las columnas de nombres, los rótulos de semanas y la
+secuencia de dias en las posiciones esperadas. Si cambia la plantilla, revisar
+la deteccion en js/excel.js.
+
+
+5. REGLAS DE FECHAS Y SEMANAS
+
+- La semana 1 es la semana de lunes a domingo que contiene el 1 de enero.
+- La numeracion del cuadrante es interna y vuelve a empezar en la semana 1;
+  no se debe sustituir por la numeracion ISO.
+- La fila "Semana 1" se usa como referencia para asignar fechas a las filas.
+- El mapa conserva las semanas de contexto que vienen en el Excel. Por ello,
+  puede incluir fechas de los años anterior y siguiente.
+- Las estadisticas cuentan solo fechas con el año natural de A1.
+- El calendario puede mostrar fechas de contexto en las filas parciales del
+  primer y ultimo mes.
+
+Cuando se cree un nuevo Excel anual, comprobar que la semana 1 y las semanas
+de contexto coinciden con la regla de la empresa y no duplican informacion
+entre cuadrantes.
+
+
+6. ESTADOS Y COLORES
+
+El valor de la celda tiene prioridad sobre el color cuando es 1 o 0:
+
+1 = TRABAJADO
+0 = VACACIONES
+
+Cuando no hay un valor 1 o 0 reconocido, se interpreta el color de relleno:
+
+Amarillo #FFFF99  = TRABAJADO
+Rojo claro #F4B084 = FESTIVO
+Celeste #66FFCC  = LIBRE
+Gris #BFBFBF  = PUENTE (por tema/tinte del Excel)
+Rojo #FF0000  = VACACIONES
+Verde  #00B050  = VACACIONES
+Naranja #FFC000  = VACACIONES
+
+Las celdas sin valor que no coincidan con un color conocido se clasifican como
+DESCONOCIDO. La clasificacion y tolerancia de color estan en
+js/excel.js, funcion clasificarEstado.
+
+
+7. ESTADISTICAS
+
+Se cuentan los dias TRABAJADO, LIBRE, VACACIONES, FESTIVO y PUENTE. Tambien se
+cuentan los sabados y domingos trabajados, y los dias trabajados por mes.
+
+El desglose mensual agrupa por mes natural de la fecha. Las semanas de contexto
+pueden aparecer pintadas en el calendario, pero no se incorporan a las
+estadisticas de otro año.
+
+El proyecto tiene anotada como posible mejora la deteccion de semanas completas
+libres; comprobar su implementacion en js/estadisticas.js antes de darla por
+disponible.
+
+
+8. PRUEBAS LOCALES
+
+- Abrir index.html mediante un servidor web local (por ejemplo, la extension
+  Live Server de VS Code). No usar file://: la carga de Excel y PDF utiliza
+  fetch y necesita HTTP.
+- Confirmar que el mensaje de estado indica que se cargo el año esperado.
+- Seleccionar un trabajador y comprobar que el calendario y las estadisticas
+  se actualizan.
+- Navegar al año anterior y posterior; confirmar que se carga el Excel cuyo
+  nombre corresponde al año visible y que se mantiene el trabajador.
+- Probar cambios de diciembre a enero y revisar los dias de las semanas que
+  cruzan el año.
+- Comprobar que las semanas de contexto se pintan con el cuadrante activo y
+  que las estadisticas no cuentan fechas de otro año.
+- Revisar la consola y el mensaje de estado cuando falta el Excel o A1 no
+  contiene un año valido.
+
+La prueba con el cuadrante 2027 debe verificar especialmente el inicio y fin
+del año, la semana 1, las semanas de contexto y que no se repitan estados entre
+los Excel 2026 y 2027.
+
+
+9. DEPENDENCIAS Y DESPLIEGUE
+
+ExcelJS y PDF.js se cargan desde CDN, indicados en index.html. La aplicacion
+esta preparada como sitio estatico; los recursos de assets deben publicarse
+junto con la pagina. No se encontraron manifiestos de paquetes ni pruebas
+automatizadas en el repositorio al redactar esta guia.
+
+No hacer commit ni push hasta revisar los cambios locales y validar el
+cuadrante del año que se vaya a publicar.
