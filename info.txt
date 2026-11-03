@@ -60,6 +60,9 @@ assets/
    consulta el mapa para pintar los dias visibles.
 6. Al cambiar de año, se solicita el archivo de ese año. Se conserva el
    trabajador si aparece en el nuevo cuadrante.
+7. Si el archivo solicitado responde HTTP 404, se intenta usar el cuadrante
+   anterior como fuente provisional y se muestra "Horario provisional, no
+   confirmado". Otros errores HTTP no activan este respaldo.
 
 El PDF se carga por separado desde la ruta indicada en index.html.
 
@@ -138,36 +141,3 @@ estadisticas de otro año.
 El proyecto tiene anotada como posible mejora la deteccion de semanas completas
 libres; comprobar su implementacion en js/estadisticas.js antes de darla por
 disponible.
-
-
-8. PRUEBAS LOCALES
-
-- Abrir index.html mediante un servidor web local (por ejemplo, la extension
-  Live Server de VS Code). No usar file://: la carga de Excel y PDF utiliza
-  fetch y necesita HTTP.
-- Confirmar que el mensaje de estado indica que se cargo el año esperado.
-- Seleccionar un trabajador y comprobar que el calendario y las estadisticas
-  se actualizan.
-- Navegar al año anterior y posterior; confirmar que se carga el Excel cuyo
-  nombre corresponde al año visible y que se mantiene el trabajador.
-- Probar cambios de diciembre a enero y revisar los dias de las semanas que
-  cruzan el año.
-- Comprobar que las semanas de contexto se pintan con el cuadrante activo y
-  que las estadisticas no cuentan fechas de otro año.
-- Revisar la consola y el mensaje de estado cuando falta el Excel o A1 no
-  contiene un año valido.
-
-La prueba con el cuadrante 2027 debe verificar especialmente el inicio y fin
-del año, la semana 1, las semanas de contexto y que no se repitan estados entre
-los Excel 2026 y 2027.
-
-
-9. DEPENDENCIAS Y DESPLIEGUE
-
-ExcelJS y PDF.js se cargan desde CDN, indicados en index.html. La aplicacion
-esta preparada como sitio estatico; los recursos de assets deben publicarse
-junto con la pagina. No se encontraron manifiestos de paquetes ni pruebas
-automatizadas en el repositorio al redactar esta guia.
-
-No hacer commit ni push hasta revisar los cambios locales y validar el
-cuadrante del año que se vaya a publicar.

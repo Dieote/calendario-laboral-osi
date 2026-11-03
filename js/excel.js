@@ -4,6 +4,8 @@ let trabajadorActual = null;
 let worksheetGlobal = null;
 let trabajadores = [];
 let añoExcel = null;
+let añoCalendario = null;
+let horarioProvisional = false;
 let solicitudCarga = 0;
 
 let mapaEstados = {};
@@ -31,22 +33,29 @@ async function manejarArchivo(event) {
 
   try {
     await leerExcel(file);
-    mostrarEstadoCarga(`Calendario ${añoExcel} cargado correctamente.`);
+    mostrarEstadoCarga(`Calendario ${añoCalendario} cargado correctamente.`);
   } catch (error) {
     console.error('No se pudo cargar el archivo Excel:', error);
     mostrarEstadoCarga(`No se pudo cargar el calendario: ${error.message}`, true);
   }
 }
 
-async function leerExcel(file, añoEsperado, nombreTrabajador = trabajadorActual, solicitudActual) {
+async function leerExcel(
+  file,
+  añoEsperado,
+  nombreTrabajador = trabajadorActual,
+  solicitudActual,
+  añoSolicitado = añoEsperado,
+  provisional = false
+) {
   const workbook = new ExcelJS.Workbook();
   const arrayBuffer = await file.arrayBuffer();
   await workbook.xlsx.load(arrayBuffer);
   if (solicitudActual && solicitudActual !== solicitudCarga) return;
-  procesarWorkbook(workbook, añoEsperado, nombreTrabajador);
+  procesarWorkbook(workbook, añoEsperado, nombreTrabajador, añoSolicitado, provisional);
 }
 
-function procesarWorkbook(workbook, añoEsperado, nombreTrabajador) {
+function procesarWorkbook(workbook, añoEsperado, nombreTrabajador, añoSolicitado, provisional) {
   const worksheet = workbook.worksheets[0];
   if (!worksheet) {
     throw new Error('El archivo no contiene ninguna hoja de cálculo.');
@@ -62,8 +71,10 @@ function procesarWorkbook(workbook, añoEsperado, nombreTrabajador) {
 
   worksheetGlobal = worksheet;
   añoExcel = añoDetectado;
-  calendar.currentYear = añoDetectado;
-  cargarSelectTrabajadores(worksheet, nombreTrabajador);
+  añoCalendario = añoSolicitado || añoDetectado;
+  horarioProvisional = provisional;
+  calendar.currentYear = añoCalendario;
+  return cargarSelectTrabajadores(worksheet, nombreTrabajador);
 }
 
 function detectarAñoExcel(worksheet) {
@@ -226,8 +237,10 @@ function construirMapaEstados(worksheet, trabajador) {
 
     const { valor, colorInfo } = leerCelda(worksheet, row, col);
     const estado = clasificarEstado(valor, colorInfo);
-    // Se conservan las semanas vecinas para completar el calendario en sus límites.
-    mapa[fechaKey(fechaActual)] = estado;
+    // Los datos de respaldo solo pintan el año solicitado; las semanas del resto no se heredan.
+    if (!horarioProvisional || fechaActual.getFullYear() === añoCalendario) {
+      mapa[fechaKey(fechaActual)] = estado;
+    }
 
     fechaActual = new Date(fechaActual);
     fechaActual.setDate(fechaActual.getDate() + 1);
@@ -264,7 +277,7 @@ function cargarSelectTrabajadores(worksheet, nombreSeleccionado = null) {
     t => t.nombre.toLowerCase() === (nombreSeleccionado || '').toLowerCase()
   );
   select.value = trabajador ? trabajador.nombre : '';
-  actualizarTrabajador(select.value);
+  return actualizarTrabajador(select.value);
 }
 
 document.getElementById('trabajadorSelect')
@@ -279,14 +292,14 @@ function actualizarTrabajador(nombre) {
     mapaEstados = {};
     calendar.generateCalendar();
     if (typeof estadisticas !== 'undefined') estadisticas.limpiar();
-    return;
+    return true;
   }
 
   const trabajador = trabajadores.find(
     t => t.nombre.toLowerCase() === nombre.toLowerCase()
   );
 
-  if (!trabajador || !worksheetGlobal) return;
+  if (!trabajador || !worksheetGlobal) return false;
 
   try {
     mapaEstados = construirMapaEstados(worksheetGlobal, trabajador);
@@ -295,9 +308,11 @@ function actualizarTrabajador(nombre) {
     if (typeof estadisticas !== 'undefined') {
       estadisticas.actualizar(nombre);
     }
+    return true;
   } catch (error) {
     console.error('No se pudo construir el calendario:', error);
     mostrarEstadoCarga(`No se pudo mostrar el calendario: ${error.message}`, true);
+    return false;
   }
 }
 
@@ -306,7 +321,7 @@ function obtenerMapaActual() {
 }
 
 function obtenerAñoExcel() {
-  return añoExcel;
+  return añoCalendario;
 }
 
 function obtenerEstadoDia(fecha) {
@@ -320,7 +335,6 @@ function obtenerEstadoDia(fecha) {
 
 async function cargarCalendarioAño(año) {
   const solicitudActual = ++solicitudCarga;
-  const nombreArchivo = `calendario${año}.xlsx`;
   const trabajadorAnterior = trabajadorActual;
 
   worksheetGlobal = null;
@@ -334,23 +348,42 @@ async function cargarCalendarioAño(año) {
 
   try {
     mostrarEstadoCarga(`Cargando calendario ${año}...`);
-    const response = await fetch(`assets/${nombreArchivo}`);
+    let añoFuente = año;
+    let response = await fetch(`assets/calendario${añoFuente}.xlsx`);
     if (solicitudActual !== solicitudCarga) return;
+
+    let provisional = false;
+    if (response.status === 404) {
+      // Solo un 404 activa el respaldo de las semanas incluidas en el Excel anterior.
+      provisional = true;
+      añoFuente = año - 1;
+      response = await fetch(`assets/calendario${añoFuente}.xlsx`);
+      if (solicitudActual !== solicitudCarga) return;
+    }
+
     if (!response.ok) {
-      throw new Error(`No se pudo acceder a ${nombreArchivo} (HTTP ${response.status}).`);
+      throw new Error(
+        `No se pudo acceder a calendario${añoFuente}.xlsx (HTTP ${response.status}).`
+      );
     }
 
     const blob = await response.blob();
-    const file = new File([blob], nombreArchivo, {
+    const file = new File([blob], `calendario${añoFuente}.xlsx`, {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     });
-    await leerExcel(file, año, trabajadorAnterior, solicitudActual);
+    const trabajadorCargado = await leerExcel(
+      file,
+      añoFuente,
+      trabajadorAnterior,
+      solicitudActual,
+      año,
+      provisional
+    );
     if (solicitudActual !== solicitudCarga) return;
-    if (trabajadorAnterior && !trabajadorActual) {
-      mostrarEstadoCarga(`Calendario ${añoExcel} cargado. Selecciona un trabajador.`);
-      return;
-    }
-    mostrarEstadoCarga(`Calendario ${añoExcel} cargado correctamente.`);
+    if (trabajadorCargado === false) return;
+    mostrarEstadoCarga(
+      provisional ? 'Horario provisional, no confirmado' : `Calendario ${añoCalendario} cargado correctamente.`
+    );
   } catch (error) {
     if (solicitudActual !== solicitudCarga) return;
     console.error('No se pudo cargar el calendario automáticamente:', error);
