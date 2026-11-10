@@ -6,11 +6,12 @@ Guia de componentes, datos y pruebas
 
 Aplicacion web estatica para consultar el calendario laboral por trabajador.
 Lee los cuadrantes Excel desde la carpeta assets, muestra los estados en una
-vista mensual o anual y calcula estadisticas. Tambien muestra un PDF en un
-visor integrado.
+vista mensual o anual, permite asignar zonas a los dias trabajados y calcula
+estadisticas. Tambien muestra un PDF en un visor integrado.
 
 La aplicacion no tiene actualmente backend, base de datos ni inicio de sesion.
 El navegador solicita los Excel y el PDF como archivos estaticos del sitio.
+Las asignaciones se guardan en localStorage del navegador.
 
 
 2. ESTRUCTURA DEL PROYECTO
@@ -30,9 +31,13 @@ js/excel.js
   fechas consultado por el calendario. Tambien presenta el estado o error de
   carga.
 
+js/asignaciones.js
+  Define las zonas disponibles y guarda las asignaciones por trabajador y
+  fecha en localStorage. Actualiza el borde de los dias marcados como Ausente.
+
 js/estadisticas.js
-  Calcula y dibuja estadisticas anuales y el desglose mensual. Solo cuenta las
-  fechas cuyo año natural coincide con el año del cuadrante.
+  Calcula las estadisticas generales anuales y el desglose mensual, incluido
+  el conteo mensual de asignaciones.
 
 js/pdfVisor.js
   Carga y dibuja el PDF; implementa zoom y navegacion entre paginas.
@@ -58,9 +63,11 @@ assets/
    sus celdas por valor y color.
 5. El mapa relaciona cada fecha (AAAA-MM-DD) con un estado. El calendario
    consulta el mapa para pintar los dias visibles.
-6. Al cambiar de año, se solicita el archivo de ese año. Se conserva el
+6. En la vista mensual se muestra un selector de zona en cada dia TRABAJADO.
+   Las asignaciones se cargan y guardan en localStorage por trabajador y fecha.
+7. Al cambiar de año, se solicita el archivo de ese año. Se conserva el
    trabajador si aparece en el nuevo cuadrante.
-7. Si el archivo solicitado responde HTTP 404, se intenta usar el cuadrante
+8. Si el archivo solicitado responde HTTP 404, se intenta usar el cuadrante
    anterior como fuente provisional y se muestra "Horario provisional, no
    confirmado". Otros errores HTTP no activan este respaldo.
 
@@ -141,3 +148,30 @@ estadisticas de otro año.
 El proyecto tiene anotada como posible mejora la deteccion de semanas completas
 libres; comprobar su implementacion en js/estadisticas.js antes de darla por
 disponible.
+
+Las zonas asignables son Peon Produccion, Calidad Oficial 1ra, Calidad Oficial
+2da, Reelevo, Palletizado Oficial 1ra, Palletizado Oficial 2da, Asistente y
+Ausente. El selector solo aparece en la vista mensual y en dias que el Excel
+clasifica como TRABAJADO. Si no se cambia la seleccion, se considera Peon
+Produccion.
+
+El desglose mensual de zonas cuenta dias trabajados desde el inicio del mes
+hasta hoy, inclusive; excluye los dias futuros. Las estadisticas generales
+existentes siguen basandose en los estados del Excel. Elegir Ausente marca el
+dia con un borde rojo y lo cuenta bajo esa asignacion en el desglose mensual;
+no cambia el estado original del Excel.
+
+
+8. PERSISTENCIA Y LIMITACIONES
+
+Las asignaciones se serializan como JSON y se guardan en localStorage con la
+clave calendarioLaboral.asignaciones.v1. La estructura relaciona el nombre
+del trabajador con fechas en formato AAAA-MM-DD y el valor de la asignacion.
+Peon Produccion es el valor predeterminado y no necesita almacenarse.
+
+No se genera un archivo JSON descargable. La persistencia solo aplica al mismo
+navegador, perfil y sitio; no se sincroniza entre dispositivos ni perfiles.
+No hay autenticacion ni separacion segura entre trabajadores: cualquier
+persona que use ese navegador puede seleccionar otros trabajadores y acceder
+a sus asignaciones. Para compartir datos de forma segura entre usuarios se
+necesitara un backend con autenticacion y autorizacion.
