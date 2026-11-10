@@ -324,6 +324,10 @@ function obtenerAñoExcel() {
   return añoCalendario;
 }
 
+function obtenerTrabajadorActual() {
+  return trabajadorActual;
+}
+
 function obtenerEstadoDia(fecha) {
   if (!trabajadorActual) return null;
 
