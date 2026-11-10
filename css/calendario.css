@@ -219,6 +219,11 @@ body {
   position: relative;
 }
 
+.dia-ausente {
+  outline: 3px solid #d40000;
+  outline-offset: -3px;
+}
+
 /* VISTA ANUAL */
 .month-title-row {
   background: var(--blue-main) !important;

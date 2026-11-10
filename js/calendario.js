@@ -175,6 +175,7 @@ const calendar = {
                 select.value = valorActual;
                 select.dataset.valorAnterior = valorActual;
                 cell.appendChild(select);
+                cell.classList.toggle('dia-ausente', valorActual === 'AUSENTE');
               }
               
               if (this.esHoy(date.getDate(), this.currentMonth, this.currentYear)) {

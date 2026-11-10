@@ -7,7 +7,8 @@ const asignaciones = {
     { valor: 'REELEVO', texto: 'Reelevo' },
     { valor: 'PALLETIZADO_OFICIAL_1RA', texto: 'Palletizado Oficial 1ra' },
     { valor: 'PALLETIZADO_OFICIAL_2DA', texto: 'Palletizado Oficial 2da' },
-    { valor: 'ASISTENTE', texto: 'Asistente' }
+    { valor: 'ASISTENTE', texto: 'Asistente' },
+    { valor: 'AUSENTE', texto: 'Ausente' }
   ],
   datos: null,
 
@@ -80,6 +81,7 @@ document.getElementById('calendarBody').addEventListener('change', event => {
   }
 
   select.dataset.valorAnterior = select.value;
+  select.closest('td').classList.toggle('dia-ausente', select.value === 'AUSENTE');
   mostrarEstadoCarga('Asignación guardada.');
   estadisticas.actualizar(nombreTrabajador);
 });
