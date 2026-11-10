@@ -1,18 +1,18 @@
 const estadisticas = {
   mesesNombres: [
-    'Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'
+    'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
   ],
 
   actualizar(nombreTrabajador) {
     const mapa = obtenerMapaActual();
-    const año  = obtenerAñoExcel();
+    const año = obtenerAñoExcel();
 
     if (!mapa || Object.keys(mapa).length === 0) {
       this.limpiar();
       return;
     }
 
-    const datos = this.calcular(mapa, año);
+    const datos = this.calcular(mapa, año, nombreTrabajador);
     this.renderizar(datos, nombreTrabajador);
   },
 
@@ -28,30 +28,35 @@ const estadisticas = {
   },
 
   //   cuenta a partir del mapa
-  calcular(mapa, año) {
+  calcular(mapa, año, nombreTrabajador) {
     const anual = {
-      trabajados:  0,
-      libres:      0,
-      vacaciones:  0,
-      festivos:    0,
-      puentes:     0,
+      trabajados: 0,
+      libres: 0,
+      vacaciones: 0,
+      festivos: 0,
+      puentes: 0,
       sabTrabajados: 0,
       domTrabajados: 0
     };
 
     const mensual = Array.from({ length: 12 }, () => ({
-      trabajados:    0,
+      trabajados: 0,
       sabTrabajados: 0,
       domTrabajados: 0
     }));
+    const asignacionesMensuales = Array.from({ length: 12 }, () =>
+      Object.fromEntries(asignaciones.opciones.map(opcion => [opcion.valor, 0]))
+    );
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
 
     for (const [key, estado] of Object.entries(mapa)) {
       const fecha = new Date(key + 'T00:00:00'); // evitar desfase UTC
       if (fecha.getFullYear() !== año) continue;  // solo cuenta días del año del calendario
-      const mes      = fecha.getMonth();      // 0-11
-      const diaSem   = fecha.getDay();        // 0=Dom, 6=Sáb
-      const esSab    = diaSem === 6;
-      const esDom    = diaSem === 0;
+      const mes = fecha.getMonth();      // 0-11
+      const diaSem = fecha.getDay();        // 0=Dom, 6=Sáb
+      const esSab = diaSem === 6;
+      const esDom = diaSem === 0;
 
       // Conteo anual
       switch (estado) {
@@ -60,10 +65,10 @@ const estadisticas = {
           if (esSab) anual.sabTrabajados++;
           if (esDom) anual.domTrabajados++;
           break;
-        case 'LIBRE':      anual.libres++;     break;
+        case 'LIBRE': anual.libres++; break;
         case 'VACACIONES': anual.vacaciones++; break;
-        case 'FESTIVO':    anual.festivos++;   break;
-        case 'PUENTE':     anual.puentes++;    break;
+        case 'FESTIVO': anual.festivos++; break;
+        case 'PUENTE': anual.puentes++; break;
       }
 
       // Conteos  días trabajados + fin de semana)
@@ -71,17 +76,25 @@ const estadisticas = {
         mensual[mes].trabajados++;
         if (esSab) mensual[mes].sabTrabajados++;
         if (esDom) mensual[mes].domTrabajados++;
+
+        // El desglose de zonas solo cuenta días trabajados hasta hoy.
+        if (fecha <= hoy) {
+          const asignacion = asignaciones.obtener(nombreTrabajador, key);
+          asignacionesMensuales[mes][asignacion]++;
+        }
       }
     }
 
-    return { anual, mensual };
+    return { anual, mensual, asignacionesMensuales };
   },
 
   renderizar(datos, nombreTrabajador) {
     const contenido = document.getElementById('estadisticasContent');
     if (!contenido) return;
 
-    const { anual, mensual } = datos;
+    const { anual, mensual, asignacionesMensuales } = datos;
+    const desgloseAbierto =
+      document.getElementById('desgloseMensualContent')?.style.display === 'block';
 
     // Indicador de fin de semana solo si el trabajador tiene alguno
     const tieneFdS = anual.sabTrabajados > 0 || anual.domTrabajados > 0;
@@ -166,16 +179,21 @@ const estadisticas = {
       </div>
 
       <div class="desglose-mensual-content" id="desgloseMensualContent" style="display:none;">
-        ${this.renderizarTablaMensual(mensual)}
+        ${this.renderizarTablaMensual(mensual, asignacionesMensuales)}
       </div>
     `;
+
+    const desglose = document.getElementById('desgloseMensualContent');
+    const flecha = document.getElementById('desgloseFlecha');
+    desglose.style.display = desgloseAbierto ? 'block' : 'none';
+    flecha.textContent = desgloseAbierto ? '▲' : '▼';
 
     document.getElementById('toggleDesglose')
       .addEventListener('click', () => this.toggleDesglose());
   },
 
   //genera la tabla de desglose mensual
-  renderizarTablaMensual(mensual) {
+  renderizarTablaMensual(mensual, asignacionesMensuales) {
     const filaHeaders = this.mesesNombres
       .map(m => `<th>${m}</th>`)
       .join('');
@@ -192,6 +210,17 @@ const estadisticas = {
       return `<td class="fds-celda">${iconos.join(' ') || '—'}</td>`;
     }).join('');
 
+    const filasAsignaciones = asignaciones.opciones.map(opcion => {
+      const valores = asignacionesMensuales
+        .map(mes => `<td>${mes[opcion.valor]}</td>`)
+        .join('');
+      return `
+        <tr>
+          <td class="tabla-mensual-label">${opcion.texto}</td>
+          ${valores}
+        </tr>`;
+    }).join('');
+
     return `
       <table class="tabla-mensual">
         <thead>
@@ -206,9 +235,13 @@ const estadisticas = {
             ${filaTrabajados}
           </tr>
           <tr>
-            <td class="tabla-mensual-label">Domingos</td>
+            <td class="tabla-mensual-label">Sabados</td>
             ${filaFdS}
           </tr>
+          <tr class="asignaciones-mensual-titulo">
+            <td colspan="13">Días trabajados por zona (hasta hoy)</td>
+          </tr>
+          ${filasAsignaciones}
         </tbody>
       </table>
     `;
@@ -216,11 +249,11 @@ const estadisticas = {
 
   toggleDesglose() {
     const content = document.getElementById('desgloseMensualContent');
-    const flecha  = document.getElementById('desgloseFlecha');
+    const flecha = document.getElementById('desgloseFlecha');
     if (!content) return;
 
     const visible = content.style.display !== 'none';
     content.style.display = visible ? 'none' : 'block';
-    flecha.textContent     = visible ? '▼' : '▲';
+    flecha.textContent = visible ? '▼' : '▲';
   }
 };

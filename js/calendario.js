@@ -119,15 +119,18 @@ const calendar = {
         let cell = document.createElement('td');
 
         if (date.getMonth() === this.currentMonth && date.getFullYear() === this.currentYear) {
-          cell.textContent = date.getDate();
+          const fechaActual = new Date(this.currentYear, this.currentMonth, date.getDate());
+          const numeroDia = document.createElement('span');
+          numeroDia.classList.add('numero-dia');
+          numeroDia.textContent = date.getDate();
+          cell.appendChild(numeroDia);
 
           if (this.esHoy(date.getDate(), this.currentMonth, this.currentYear)) {
             cell.classList.add('today');
           }
           if (typeof obtenerEstadoDia === 'function') {
-            const fechaActual = new Date(this.currentYear, this.currentMonth, date.getDate());
             const estado = obtenerEstadoDia(fechaActual);
-            
+
             if (estado) {
               cell.className = cell.className.replace(/estado-\w+/g, '').trim();
               
@@ -150,6 +153,28 @@ const calendar = {
                 case 'DESCONOCIDO':
                   cell.classList.add('estado-desconocido');
                   break;
+              }
+
+              if (estado === 'TRABAJADO' && typeof asignaciones !== 'undefined') {
+                const select = document.createElement('select');
+                select.classList.add('asignacion-select');
+                select.dataset.fecha = fechaKey(fechaActual);
+                select.setAttribute(
+                  'aria-label',
+                  `Zona de trabajo del ${fechaActual.toLocaleDateString('es')}`
+                );
+
+                const trabajador = obtenerTrabajadorActual();
+                const valorActual = asignaciones.obtener(trabajador, select.dataset.fecha);
+                asignaciones.opciones.forEach(opcion => {
+                  const elemento = document.createElement('option');
+                  elemento.value = opcion.valor;
+                  elemento.textContent = opcion.texto;
+                  select.appendChild(elemento);
+                });
+                select.value = valorActual;
+                select.dataset.valorAnterior = valorActual;
+                cell.appendChild(select);
               }
               
               if (this.esHoy(date.getDate(), this.currentMonth, this.currentYear)) {

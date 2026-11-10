@@ -194,6 +194,19 @@ body {
   min-width: 38px;
 }
 
+.asignacion-select {
+  display: block;
+  width: 100%;
+  min-width: 115px;
+  margin-top: 6px;
+  padding: 4px;
+  border: 1px solid #b8c5ce;
+  border-radius: 5px;
+  background: white;
+  color: #333;
+  font-size: 0.78rem;
+}
+
 .calendar td:not(.week-number):hover {
   background: #ebadad;
   transform: scale(1.05);
@@ -397,6 +410,13 @@ body {
 }
 
 .tabla-mensual tbody tr:hover td { background: #f0f7ff; }
+
+.tabla-mensual .asignaciones-mensual-titulo td {
+  padding-top: 12px;
+  background: #e8eef3;
+  color: #333;
+  font-weight: 600;
+}
 
 .fds-celda       { font-size: 0.76rem; color: var(--blue-main); font-weight: 500; }
 .fds-celda span  { display: inline-block; }
