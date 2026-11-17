@@ -155,27 +155,49 @@ const calendar = {
                   break;
               }
 
-              if (estado === 'TRABAJADO' && typeof asignaciones !== 'undefined') {
-                const select = document.createElement('select');
-                select.classList.add('asignacion-select');
-                select.dataset.fecha = fechaKey(fechaActual);
-                select.setAttribute(
-                  'aria-label',
-                  `Zona de trabajo del ${fechaActual.toLocaleDateString('es')}`
-                );
-
+              if (typeof asignaciones !== 'undefined') {
+                const fecha = fechaKey(fechaActual);
                 const trabajador = obtenerTrabajadorActual();
-                const valorActual = asignaciones.obtener(trabajador, select.dataset.fecha);
-                asignaciones.opciones.forEach(opcion => {
-                  const elemento = document.createElement('option');
-                  elemento.value = opcion.valor;
-                  elemento.textContent = opcion.texto;
-                  select.appendChild(elemento);
-                });
-                select.value = valorActual;
-                select.dataset.valorAnterior = valorActual;
-                cell.appendChild(select);
-                cell.classList.toggle('dia-ausente', valorActual === 'AUSENTE');
+                const esFinDeSemana = fechaActual.getDay() === 0 || fechaActual.getDay() === 6;
+                const esExtra = asignaciones.esDiaExtra(trabajador, fecha);
+
+                if (estado === 'TRABAJADO' || esExtra) {
+                  const select = document.createElement('select');
+                  select.classList.add('asignacion-select');
+                  select.dataset.fecha = fecha;
+                  select.setAttribute(
+                    'aria-label',
+                    `Zona de trabajo del ${fechaActual.toLocaleDateString('es')}`
+                  );
+
+                  const valorActual = asignaciones.obtener(trabajador, fecha);
+                  asignaciones.opciones.forEach(opcion => {
+                    const elemento = document.createElement('option');
+                    elemento.value = opcion.valor;
+                    elemento.textContent = opcion.texto;
+                    select.appendChild(elemento);
+                  });
+                  select.value = valorActual;
+                  select.dataset.valorAnterior = valorActual;
+                  cell.appendChild(select);
+                  cell.classList.toggle('dia-ausente', valorActual === 'AUSENTE');
+                }
+
+                if (estado !== 'TRABAJADO' && (esFinDeSemana || estado === 'FESTIVO')) {
+                  const boton = document.createElement('button');
+                  boton.type = 'button';
+                  boton.classList.add('dia-extra-toggle');
+                  boton.dataset.fecha = fecha;
+                  boton.dataset.activo = String(esExtra);
+                  boton.textContent = esExtra ? 'Quitar día extra' : 'Día Extra';
+                  boton.setAttribute(
+                    'aria-label',
+                    `${esExtra ? 'Quitar día extra del' : 'Marcar como día extra el'} ${fechaActual.toLocaleDateString('es')}`
+                  );
+                  cell.appendChild(boton);
+                }
+
+                cell.classList.toggle('dia-extra', esExtra);
               }
               
               if (this.esHoy(date.getDate(), this.currentMonth, this.currentYear)) {

@@ -34,6 +34,11 @@ const asignaciones = {
     return valor;
   },
 
+  esDiaExtra(nombreTrabajador, fecha) {
+    const diasExtra = this.cargar()[nombreTrabajador]?.__diasExtra || [];
+    return diasExtra.includes(fecha);
+  },
+
   guardar(nombreTrabajador, fecha, valor) {
     const datosActuales = this.cargar();
     const opcionValida = this.opciones.some(opcion => opcion.valor === valor);
@@ -51,10 +56,45 @@ const asignaciones = {
       datos[nombreTrabajador][fecha] = valor;
     }
 
-    if (Object.keys(datos[nombreTrabajador]).length === 0) {
+    const tieneAsignaciones = Object.keys(datos[nombreTrabajador])
+      .some(clave => clave !== '__diasExtra');
+    const tieneDiasExtra = (datos[nombreTrabajador].__diasExtra || []).length > 0;
+    if (!tieneAsignaciones && !tieneDiasExtra) {
       delete datos[nombreTrabajador];
     }
 
+    this.persistir(datos);
+  },
+
+  establecerDiaExtra(nombreTrabajador, fecha, activo) {
+    const datosActuales = this.cargar();
+    const datos = { ...datosActuales };
+    const trabajador = { ...(datosActuales[nombreTrabajador] || {}) };
+    const diasExtra = new Set(trabajador.__diasExtra || []);
+
+    if (activo) {
+      diasExtra.add(fecha);
+      trabajador.__diasExtra = [...diasExtra];
+    } else {
+      diasExtra.delete(fecha);
+      delete trabajador[fecha];
+      if (diasExtra.size) {
+        trabajador.__diasExtra = [...diasExtra];
+      } else {
+        delete trabajador.__diasExtra;
+      }
+    }
+
+    if (Object.keys(trabajador).length) {
+      datos[nombreTrabajador] = trabajador;
+    } else {
+      delete datos[nombreTrabajador];
+    }
+
+    this.persistir(datos);
+  },
+
+  persistir(datos) {
     if (Object.keys(datos).length === 0) {
       localStorage.removeItem(this.claveStorage);
     } else {
@@ -84,4 +124,26 @@ document.getElementById('calendarBody').addEventListener('change', event => {
   select.closest('td').classList.toggle('dia-ausente', select.value === 'AUSENTE');
   mostrarEstadoCarga('Asignación guardada.');
   estadisticas.actualizar(nombreTrabajador);
+});
+
+document.getElementById('calendarBody').addEventListener('click', event => {
+  const boton = event.target.closest('.dia-extra-toggle');
+  if (!boton) return;
+
+  const nombreTrabajador = obtenerTrabajadorActual();
+  const fecha = boton.dataset.fecha;
+
+  try {
+    asignaciones.establecerDiaExtra(
+      nombreTrabajador,
+      fecha,
+      boton.dataset.activo !== 'true'
+    );
+    calendar.generateCalendar();
+    estadisticas.actualizar(nombreTrabajador);
+    mostrarEstadoCarga('Día extra actualizado.');
+  } catch (error) {
+    console.error('No se pudo actualizar el día extra:', error);
+    mostrarEstadoCarga(`No se pudo actualizar el día extra: ${error.message}`, true);
+  }
 });

@@ -42,7 +42,8 @@ const estadisticas = {
     const mensual = Array.from({ length: 12 }, () => ({
       trabajados: 0,
       sabTrabajados: 0,
-      domTrabajados: 0
+      domTrabajados: 0,
+      diasExtra: 0
     }));
     const asignacionesMensuales = Array.from({ length: 12 }, () =>
       Object.fromEntries(asignaciones.opciones.map(opcion => [opcion.valor, 0]))
@@ -82,6 +83,12 @@ const estadisticas = {
           const asignacion = asignaciones.obtener(nombreTrabajador, key);
           asignacionesMensuales[mes][asignacion]++;
         }
+      }
+
+      if (asignaciones.esDiaExtra(nombreTrabajador, key) && fecha <= hoy) {
+        mensual[mes].diasExtra++;
+        const asignacion = asignaciones.obtener(nombreTrabajador, key);
+        asignacionesMensuales[mes][asignacion]++;
       }
     }
 
@@ -210,6 +217,10 @@ const estadisticas = {
       return `<td class="fds-celda">${iconos.join(' ') || '—'}</td>`;
     }).join('');
 
+    const filaDiasExtra = mensual
+      .map(m => `<td>${m.diasExtra || '—'}</td>`)
+      .join('');
+
     const filasAsignaciones = asignaciones.opciones.map(opcion => {
       const valores = asignacionesMensuales
         .map(mes => `<td>${mes[opcion.valor]}</td>`)
@@ -237,6 +248,10 @@ const estadisticas = {
           <tr>
             <td class="tabla-mensual-label">Sabados</td>
             ${filaFdS}
+          </tr>
+          <tr>
+            <td class="tabla-mensual-label">Días extra trabajados</td>
+            ${filaDiasExtra}
           </tr>
           <tr class="asignaciones-mensual-titulo">
             <td colspan="13">Días trabajados por zona (hasta hoy)</td>
