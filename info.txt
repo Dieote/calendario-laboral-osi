@@ -33,7 +33,8 @@ js/excel.js
 
 js/asignaciones.js
   Define las zonas disponibles y guarda las asignaciones por trabajador y
-  fecha en localStorage. Actualiza el borde de los dias marcados como Ausente.
+  fecha en localStorage. Gestiona dias extra y los bordes de Ausente y dia
+  extra.
 
 js/estadisticas.js
   Calcula las estadisticas generales anuales y el desglose mensual, incluido
@@ -160,6 +161,13 @@ hasta hoy, inclusive; excluye los dias futuros. Las estadisticas generales
 existentes siguen basandose en los estados del Excel. Elegir Ausente marca el
 dia con un borde rojo y lo cuenta bajo esa asignacion en el desglose mensual;
 no cambia el estado original del Excel.
+
+En sabados, domingos y dias FESTIVO que el Excel no marca como TRABAJADO se
+puede activar «Dia Extra». El dia conserva su estado original del Excel,
+muestra el selector de zona y queda marcado con un borde verde. Al desactivarlo
+se elimina tambien la asignacion de ese dia. Los dias extra pasados se suman
+por mes como dias extra trabajados y en el conteo mensual de su asignacion;
+los dias extra de hoy o futuros no se cuentan.
 
 
 8. PERSISTENCIA Y LIMITACIONES
